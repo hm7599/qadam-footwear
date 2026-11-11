@@ -4,6 +4,7 @@ import { User } from '../models/User.js';
 import { Order } from '../models/Order.js';
 import { SEED_PRODUCTS } from '../data/seedProducts.js';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 export let isMongoConnected = false;
 
@@ -48,19 +49,23 @@ async function seedInitialData() {
       }
     }
 
-    const adminUser = await User.findOne({ $or: [{ email: 'admin@qadamshoes.com' }, { email: 'admin@aurashoes.com' }] });
-    if (!adminUser) {
-      console.log('[Database] Creating default administrator account...');
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash('admin123', salt);
+    // Admin password always follows ADMIN_PASSWORD (min 10 chars). Without it, admin login stays disabled.
+    const envPw = process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 10 ? process.env.ADMIN_PASSWORD : '';
+    const adminUser: any = await User.findOne({ $or: [{ email: 'admin@qadamshoes.com' }, { email: 'admin@aurashoes.com' }] });
+    if (!envPw) {
+      console.warn('⚠️  [auth] ADMIN_PASSWORD not set (min 10 chars) — admin login is disabled.');
+      if (adminUser) await User.updateOne({ _id: adminUser._id }, { $set: { passwordHash: await bcrypt.hash(crypto.randomUUID() + crypto.randomUUID(), 12) } });
+    } else if (!adminUser) {
       await User.create({
         name: 'QADAM Executive Admin',
         email: 'admin@qadamshoes.com',
-        passwordHash,
+        passwordHash: await bcrypt.hash(envPw, 12),
         role: 'admin',
-        phone: '+1 (555) 019-2831'
       });
-      console.log('✅ [Database] Admin created: admin@qadamshoes.com / admin123');
+      console.log('✅ [Database] Admin account created (username: admin).');
+    } else if (!(await bcrypt.compare(envPw, adminUser.passwordHash || ''))) {
+      await User.updateOne({ _id: adminUser._id }, { $set: { passwordHash: await bcrypt.hash(envPw, 12), role: 'admin' } });
+      console.log('🔑 [Database] Admin password synced from ADMIN_PASSWORD.');
     }
 
     const customerUser = await User.findOne({ email: 'alex@example.com' });
