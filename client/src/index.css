@@ -1,0 +1,724 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   QADAM PRECISION LAB — Design System v2.0
+   Premium Futuristic UI/UX — International Footwear Brand
+   ═══════════════════════════════════════════════════════════ */
+
+@theme {
+  /* Core Luxury Typography */
+  --font-serif: 'Playfair Display', Georgia, Cambria, serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-editorial: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-tech: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-cinzel: 'Playfair Display', serif;
+  --font-mono: 'Plus Jakarta Sans', ui-monospace, SFMono-Regular, monospace;
+
+  /* Core Palette */
+  --color-canvas: #F5F4F2;
+  --color-panel: #FFFFFF;
+  --color-ink: #0E0E0E;
+  --color-ink-soft: #6B6B6B;
+  --color-metallic: #B8BCC4;
+  --color-hairline: #E4E5E7;
+  --color-accent-slate: #5C6470;
+  --color-accent-warm: #9A8B78;
+  --color-accent-gold: #C9A96E;
+
+  /* Extended spacing */
+  --spacing-section: 7rem;
+}
+
+@layer base {
+  :root {
+    --bg-primary: #F5F4F2;
+    --bg-secondary: #FFFFFF;
+    --text-primary: #0E0E0E;
+    --text-secondary: #6B6B6B;
+    --metallic-silver: #B8BCC4;
+    --border-hairline: #E4E5E7;
+    --accent: #5C6470;
+    --accent-warm: #9A8B78;
+    --accent-gold: #C9A96E;
+    
+    /* 3D perspective for card tilts */
+    --perspective: 1200px;
+  }
+
+  * {
+    border-color: #E4E5E7;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #F5F4F2;
+    color: #0E0E0E;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-color: #F5F4F2;
+    color: #0E0E0E;
+  }
+
+  /* Reduced-motion support */
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Premium Minimal Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #F5F4F2; }
+  ::-webkit-scrollbar-thumb { background: #C8CBCF; border-radius: 0; }
+  ::-webkit-scrollbar-thumb:hover { background: #0E0E0E; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY SYSTEM — Haute-Couture Italian Luxury
+   ═══════════════════════════════════════════════════════════ */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-sans {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-tech {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-feature-settings: 'tnum' 1, 'cv02' 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATION KEYFRAMES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Marquee Ticker - Ultra-Smooth Hardware-Accelerated Right-to-Left Scroll */
+@keyframes ticker {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Slow vertical float */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-18px) rotate(0.5deg); }
+  66% { transform: translateY(-8px) rotate(-0.3deg); }
+}
+
+/* Digit flip for countdown */
+@keyframes flip-in {
+  0% { transform: rotateX(90deg); opacity: 0; }
+  100% { transform: rotateX(0deg); opacity: 1; }
+}
+
+@keyframes flip-out {
+  0% { transform: rotateX(0deg); opacity: 1; }
+  100% { transform: rotateX(-90deg); opacity: 0; }
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Reveal up (for scroll-triggered) */
+@keyframes reveal-up {
+  0% { opacity: 0; transform: translateY(32px); clip-path: inset(100% 0 0 0); }
+  100% { opacity: 1; transform: translateY(0); clip-path: inset(0% 0 0 0); }
+}
+
+/* Reveal from left */
+@keyframes reveal-left {
+  0% { opacity: 0; transform: translateX(-24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Scale in */
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Rotate slow */
+@keyframes rotate-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Breathing scale */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+
+/* Scan line */
+@keyframes scan {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
+/* Gradient shift */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Noise grain */
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2%, -3%); }
+  30% { transform: translate(3%, -1%); }
+  50% { transform: translate(-1%, 2%); }
+  70% { transform: translate(2%, 1%); }
+  90% { transform: translate(-3%, 2%); }
+}
+
+/* Blink cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Underline draw */
+@keyframes draw-line {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Ticker - Continuous Right-to-Left Infinite Marquee (Never Stops on Cursor Hover) */
+.animate-ticker {
+  display: flex !important;
+  width: max-content !important;
+  animation: ticker 36s linear infinite !important;
+  animation-play-state: running !important;
+  will-change: transform;
+}
+.animate-ticker:hover,
+.animate-ticker:focus,
+.animate-ticker:active,
+.animate-ticker *:hover {
+  animation-play-state: running !important;
+}
+
+/* Float */
+.animate-float {
+  animation: float-y 7s ease-in-out infinite;
+}
+
+/* Breathe */
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Shimmer skeleton */
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0efed 25%, #e8e7e5 50%, #f0efed 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* Grain overlay */
+.grain-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  animation: grain 8s steps(10) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Architectural hover underline */
+.editorial-underline {
+  position: relative;
+  display: inline-block;
+}
+.editorial-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #0E0E0E;
+  transform-origin: bottom right;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.editorial-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Hairline Grid */
+.hairline-grid {
+  background-size: 48px 48px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+}
+
+/* Dot grid */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Premium card 3D tilt wrapper */
+.card-3d-wrapper {
+  perspective: var(--perspective);
+  transform-style: preserve-3d;
+}
+
+/* Clip-path reveal */
+.clip-reveal {
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.clip-reveal.revealed {
+  clip-path: inset(0 0 0% 0);
+}
+
+/* Text mask gradient */
+.text-gradient-metal {
+  background: linear-gradient(135deg, #0E0E0E 0%, #5C6470 50%, #0E0E0E 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease infinite;
+}
+
+/* Premium button magnetic */
+.btn-magnetic {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-magnetic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.08);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn-magnetic:hover::before { opacity: 1; }
+
+/* Scanline effect for dark sections */
+.scanline-effect::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+  animation: scan 6s linear infinite;
+  pointer-events: none;
+}
+
+/* Product card reveal on hover */
+.product-card-actions {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .product-card-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Image zoom container */
+.img-zoom-container {
+  overflow: hidden;
+}
+.img-zoom-container img {
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.img-zoom-container:hover img {
+  transform: scale(1.07);
+}
+
+/* Premium focus ring */
+*:focus-visible {
+  outline: 2px solid #0E0E0E;
+  outline-offset: 3px;
+}
+
+/* Input premium style */
+.input-premium {
+  border: 1px solid #E4E5E7;
+  background: #FFFFFF;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.75rem;
+  color: #0E0E0E;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+}
+.input-premium:focus {
+  outline: none;
+  border-color: #0E0E0E;
+  box-shadow: 0 0 0 1px #0E0E0E;
+}
+.input-premium::placeholder {
+  color: #B8BCC4;
+  letter-spacing: 0.05em;
+}
+
+/* Number flip 3D */
+.digit-flip {
+  perspective: 400px;
+  display: inline-block;
+}
+.digit-flip-inner {
+  animation: flip-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Blinking cursor */
+.cursor-blink::after {
+  content: '|';
+  animation: blink 1s step-end infinite;
+}
+
+/* Premium selection */
+::selection {
+  background: #0E0E0E;
+  color: #FFFFFF;
+}
+
+/* Noise texture bg */
+.bg-noise {
+  position: relative;
+  isolation: isolate;
+}
+.bg-noise::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Section divider line */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, #E4E5E7, transparent);
+}
+
+/* Premium badge */
+.badge-premium {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Geometric accent element */
+.geo-accent {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+/* Large watermark text */
+.watermark-text {
+  position: absolute;
+  font-family: 'Syne', sans-serif;
+  font-weight: 900;
+  font-size: clamp(80px, 20vw, 240px);
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #0E0E0E;
+  opacity: 0.03;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Stagger animation delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* ═══════════════════════════════════════════════════════════
+   PREMIUM COMPONENT OVERRIDES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Range input custom styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1px;
+  background: #E4E5E7;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #0E0E0E;
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+  transition: transform 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Select dropdown custom */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Clean image rendering — in the base layer so utility classes like h-full / object-cover can override it */
+@layer base {
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN PANEL — clean, readable dashboard typography
+   (overrides the luxury serif / wide-tracked styles used on the storefront)
+   ═══════════════════════════════════════════════════════════ */
+.admin-ui,
+.admin-ui .font-display,
+.admin-ui .font-serif,
+.admin-ui .font-editorial,
+.admin-ui .font-cinzel,
+.admin-ui .font-tech,
+.admin-ui .font-mono {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-style: normal;
+}
+.admin-ui { -webkit-font-smoothing: antialiased; font-feature-settings: 'tnum' 1; }
+
+/* Headings: sentence-like, bold, no extra-heavy display look */
+.admin-ui h1 { font-size: 1.75rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.02em; text-transform: none; }
+.admin-ui h2 { font-weight: 700; letter-spacing: -0.01em; text-transform: none; }
+.admin-ui h3, .admin-ui h4 { font-weight: 600; letter-spacing: -0.01em; text-transform: none; }
+.admin-ui .font-black { font-weight: 700; }
+
+/* Tone down very wide letter-spacing on labels */
+.admin-ui [class*="tracking-["],
+.admin-ui .tracking-widest,
+.admin-ui .tracking-wider { letter-spacing: 0.03em; }
+.admin-ui h1[class*="tracking-"], .admin-ui h2[class*="tracking-"] { letter-spacing: -0.02em; }
+
+/* Italic subtitles become normal muted text */
+.admin-ui .italic { font-style: normal; }
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN THEME — cards, modals, inputs (applies to every admin page)
+   ═══════════════════════════════════════════════════════════ */
+.admin-ui main h1 { font-size: 1.6rem; color: #111113; }
+
+/* Older square, hard-bordered boxes become soft rounded cards */
+.admin-ui main .border.bg-white,
+.admin-ui main .border.border-neutral-200:not(input):not(select):not(textarea):not(button):not(span) {
+  border-radius: 1rem;
+  border-color: #ECECEF;
+}
+.admin-ui main .border.bg-white { box-shadow: 0 1px 2px rgba(16, 16, 20, 0.04); }
+.admin-ui main table { border-collapse: separate; border-spacing: 0; }
+
+/* Form controls */
+.admin-ui input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]),
+.admin-ui select,
+.admin-ui textarea {
+  border-radius: 0.6rem;
+  transition: border-color .15s, box-shadow .15s;
+}
+.admin-ui input:focus:not([type="checkbox"]):not([type="radio"]),
+.admin-ui select:focus,
+.admin-ui textarea:focus {
+  outline: none;
+  border-color: #9A6440 !important;
+  box-shadow: 0 0 0 3px rgba(176, 122, 82, 0.22) !important;
+}
+
+/* Buttons: soften square corners everywhere in admin */
+.admin-ui main button:not(.rounded-full) { border-radius: 0.6rem; }
+
+/* Keep scrollbar space reserved so opening/closing modals never shifts layout sideways */
+.admin-ui main,
+.admin-ui nav {
+  scrollbar-gutter: stable;
+}
+
+/* Freeze background scrolling whenever any full-screen modal/drawer is open in admin */
+.admin-ui:has(.fixed.inset-0) main,
+.admin-ui:has(.fixed.inset-0) nav {
+  overflow-y: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+/* ── Modals: every full-screen overlay inside admin ── */
+.admin-ui .fixed.inset-0 {
+  background-color: rgba(17, 17, 19, 0.55) !important;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: adminFade .2s ease-out;
+}
+.admin-ui .fixed.inset-0 > div:not(.absolute) {
+  border-radius: 1.25rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 30px 80px -20px rgba(17, 17, 19, 0.45), 0 0 0 1px rgba(17, 17, 19, 0.04) !important;
+  animation: adminModalIn .28s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+/* Modal header strip */
+.admin-ui .fixed.inset-0 > div:not(.absolute) > .border-b:first-child {
+  background: linear-gradient(180deg, #FAFAFB 0%, #FFFFFF 100%);
+}
+/* Mobile: modals slide up from the bottom like a sheet */
+@media (max-width: 639px) {
+  .admin-ui .fixed.inset-0 > div:not(.absolute) { animation-name: adminSheetIn; }
+}
+.admin-ui .admin-drawer { animation: adminDrawerIn .25s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 0 !important; border: 0 !important; }
+
+@keyframes adminFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes adminModalIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes adminSheetIn { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: none; } }
+@keyframes adminDrawerIn { from { transform: translateX(-100%); } to { transform: none; } }
+
+/* Primary dark buttons get the gold focus ring */
+.admin-ui .bg-neutral-950:focus-visible, .admin-ui .bg-black:focus-visible { box-shadow: 0 0 0 3px rgba(176, 122, 82, 0.4); }
+
+/* Scrollbars */
+.admin-ui ::-webkit-scrollbar { width: 10px; height: 10px; }
+.admin-ui ::-webkit-scrollbar-thumb { background: #D6D6DB; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+.admin-ui ::-webkit-scrollbar-thumb:hover { background-color: #B5B5BC; }
+
+/* Admin bell wiggle when there are unread new orders */
+@keyframes wiggle {
+  0%, 60%, 100% { transform: rotate(0); }
+  10%, 30% { transform: rotate(-14deg); }
+  20%, 40% { transform: rotate(14deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STOREFRONT TYPOGRAPHY — clean & readable
+   Headings: Playfair Display (max 700, never "black").
+   Body / UI: Plus Jakarta Sans with gentle letter-spacing.
+   ═══════════════════════════════════════════════════════════ */
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Serif headings: elegant weight, normal spacing */
+.font-display, .font-serif, .font-editorial, .font-cinzel {
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.01em;
+}
+.font-display.font-black, .font-serif.font-black, .font-editorial.font-black,
+.font-display.font-extrabold, .font-serif.font-extrabold {
+  font-weight: 700;
+}
+/* Very tight / very wide tracking on serif headings looks odd — normalise it */
+.font-display[class*="tracking-"], .font-serif[class*="tracking-"] { letter-spacing: -0.01em; }
+/* Big all-caps serif headings read better in title case */
+:where(h1, h2, h3).font-display.uppercase, :where(h1, h2, h3).font-serif.uppercase { text-transform: none; }
+
+/* Small UI labels: keep caps but calm the extreme letter-spacing */
+.font-tech[class*="tracking-[0.3"], .font-tech[class*="tracking-[0.4"], .font-tech.tracking-widest {
+  letter-spacing: 0.14em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LIGHT PREMIUM THEME — warm ivory & espresso
+   Re-maps Tailwind's neutral scale to warm, soft tones so the whole
+   site (and every bg-neutral-* / text-neutral-* class) feels light and premium.
+   ═══════════════════════════════════════════════════════════ */
+@theme {
+  --color-neutral-50:  #FAF8F5;
+  --color-neutral-100: #F3EFEA;
+  --color-neutral-200: #E8E2DA;
+  --color-neutral-300: #D7CFC4;
+  --color-neutral-400: #A99F93;
+  --color-neutral-500: #81776C;
+  --color-neutral-600: #655C52;
+  --color-neutral-700: #4C453D;
+  --color-neutral-800: #352F29;
+  --color-neutral-900: #26211C;
+  --color-neutral-950: #1B1714;
+  --color-black: #1B1714;
+  --color-ink: #1B1714;
+  --color-canvas: #FBF9F6;
+  --color-accent-gold: #B08D57;
+  --color-champagne: #EFE6D8;
+}
+
+@layer base {
+  html, body { background-color: #FBF9F6; color: #1B1714; }
+  * { border-color: #E8E2DA; }
+  ::selection { background: #EFE6D8; color: #1B1714; }
+  ::-webkit-scrollbar-track { background: #FBF9F6; }
+  ::-webkit-scrollbar-thumb { background: #D7CFC4; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #A99F93; }
+}
+
+/* Storefront sections: soft ivory instead of stark white, white cards stand out */
+body:not(:has(.admin-ui)) section.bg-white { background-color: #FBF9F6; }
+
+/* QADAM range slider */
+input.qadam-range { -webkit-appearance: none; appearance: none; height: 8px; border-radius: 9999px; outline: none; }
+input.qadam-range::-webkit-slider-thumb { -webkit-appearance: none; transform: none; } input.qadam-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 9999px; background: #fff; border: 3px solid #8A5A2B; box-shadow: 0 4px 12px rgba(59,38,24,0.3); cursor: pointer; }
+input.qadam-range::-moz-range-thumb { width: 20px; height: 20px; border-radius: 9999px; background: #fff; border: 3px solid #8A5A2B; box-shadow: 0 4px 12px rgba(59,38,24,0.3); cursor: pointer; }
+input.qadam-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(229,181,109,0.4); }

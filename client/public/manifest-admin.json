@@ -1,0 +1,22 @@
+{
+  "id": "/admin",
+  "name": "QADAM Admin",
+  "short_name": "QADAM Admin",
+  "description": "Manage QADAM products, orders, customers and the homepage.",
+  "start_url": "/admin?source=pwa",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icons/admin-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/admin-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Orders", "url": "/admin/orders", "icons": [{ "src": "/icons/admin-192.png", "sizes": "192x192" }] },
+    { "name": "Products", "url": "/admin/products", "icons": [{ "src": "/icons/admin-192.png", "sizes": "192x192" }] },
+    { "name": "Homepage Banner", "url": "/admin/hero", "icons": [{ "src": "/icons/admin-192.png", "sizes": "192x192" }] }
+  ],
+  "categories": ["business", "productivity"]
+}

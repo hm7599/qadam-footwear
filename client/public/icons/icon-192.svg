@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="48" fill="#111111" />
+  <path d="M 45 125 C 65 115, 90 115, 115 95 C 130 85, 145 70, 155 80 C 165 90, 150 105, 135 115 C 115 130, 80 135, 50 135 Z" fill="#ffffff" opacity="0.95" />
+  <path d="M 65 110 Q 98 80 135 75" stroke="#f4f4f5" stroke-width="5" stroke-linecap="round" fill="none" />
+  <text x="96" y="165" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="16" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="3">QADAM</text>
+</svg>

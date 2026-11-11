@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+
+# Environment & runtime data
+.env
+.env.*
+!.env.example
+server/data/
+
+# Local tooling & root verification screenshots
+.claude/
+/*.png
+
+# Logs & OS files
+logs/
+*.log
+.DS_Store
