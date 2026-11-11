@@ -19,3 +19,4 @@ server/data/
 logs/
 *.log
 .DS_Store
+.vercel

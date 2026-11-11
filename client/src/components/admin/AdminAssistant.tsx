@@ -47,6 +47,34 @@ export const AdminAssistant: React.FC<Props> = ({ convo, templates, format, onIn
   }]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [ai, setAi] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem('aura_token');
+    fetch('/api/admin-assistant/status', { headers: t ? { Authorization: `Bearer ${t}` } : {} })
+      .then(r => r.json()).then(d => setAi(!!d.enabled)).catch(() => setAi(false));
+  }, []);
+
+  const askAI = async (history: BotMsg[]): Promise<BotMsg> => {
+    const t = localStorage.getItem('aura_token');
+    const r = await fetch('/api/admin-assistant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(t ? { Authorization: `Bearer ${t}` } : {}) },
+      body: JSON.stringify({
+        chatId: convo?.id,
+        messages: history.filter(m => m.id !== 'hello').map(m => ({
+          role: m.from === 'admin' ? 'user' : 'assistant',
+          content: m.text + (m.replies?.length ? '\n' + m.replies.map(x => `<reply>${x}</reply>`).join('\n') : ''),
+        })),
+      }),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok || !d.success) throw new Error(d.message || 'AI error');
+    const replies: string[] = [];
+    const text = String(d.text).replace(/<reply>([\s\S]*?)<\/reply>/g, (_: string, x: string) => { replies.push(x.trim()); return ''; })
+      .replace(/\n{3,}/g, '\n\n').trim();
+    return { id: uid(), from: 'bot', text: text || 'Ye replies bhej sakte hain:', replies };
+  };
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -139,16 +167,26 @@ export const AdminAssistant: React.FC<Props> = ({ convo, templates, format, onIn
   const ask = async (raw: string) => {
     const q = raw.trim();
     if (!q || busy) return;
-    setMsgs(m => [...m, { id: uid(), from: 'admin', text: q }]);
+    const mine: BotMsg = { id: uid(), from: 'admin', text: q };
+    const history = [...msgs, mine];
+    setMsgs(history);
     setInput('');
     setBusy(true);
-    const reply = await answer(q);
+    let reply: BotMsg;
+    if (ai) {
+      try { reply = await askAI(history); }
+      catch (e: any) { reply = await answer(q); reply.text = `⚠️ AI: ${e.message} — basic mode jawab:\n` + reply.text; }
+    } else reply = await answer(q);
     setMsgs(m => [...m, reply]);
     setBusy(false);
   };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center gap-1.5 border-b border-[#F1E6D8] bg-white px-2.5 py-1 text-[10.5px] text-[#8A6A52]">
+        <span className={`h-1.5 w-1.5 rounded-full ${ai ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+        {ai === null ? 'Checking…' : ai ? 'AI mode (Claude) — kuch bhi poochein' : 'Basic mode — AI ke liye server/.env mein ANTHROPIC_API_KEY daalein'}
+      </div>
       <div ref={scrollRef} className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain p-2.5">
         {msgs.map(m => (
           <div key={m.id} className={`flex gap-1.5 ${m.from === 'admin' ? 'justify-end' : ''}`}>

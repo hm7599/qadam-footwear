@@ -27,7 +27,7 @@ type ViewMsg = {
 const WELCOME: ViewMsg = {
   key: 'welcome',
   from: 'bot',
-  text: "Assalam o Alaikum! 👋 I'm the QADAM assistant. Ask about sizes, delivery, Cash on Delivery, or returns.\n\n📦 To track your order, just type your order number (e.g. QDM-89214) and I'll show the full details right here.",
+  text: "Assalam o Alaikum! 👋 I'm the QADAM assistant. Ask about sizes, delivery, Cash on Delivery, or returns.",
   extra: { chips: START_CHIPS },
 };
 
@@ -189,6 +189,7 @@ export const ChatWidget: React.FC<{ products: Product[] }> = ({ products }) => {
   const [error, setError] = useState('');
   const [showHint, setShowHint] = useState(false);
   const [lookingUp, setLookingUp] = useState(false);
+  const [trackId, setTrackId] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -593,6 +594,28 @@ export const ChatWidget: React.FC<{ products: Product[] }> = ({ products }) => {
                   <WhatsAppIcon className="h-3.5 w-3.5" /> WhatsApp
                 </button>
               </div>
+            )}
+
+            {/* Track order by ID */}
+            {!live && (
+              <form
+                onSubmit={e => { e.preventDefault(); const id = trackId.trim(); if (id && !lookingUp) { send(id); setTrackId(''); } }}
+                className="flex items-center gap-2 border-t border-[#EDE1CF] bg-[#FBF6EE] px-3 py-2"
+              >
+                <Package className="h-4 w-4 shrink-0 text-[#8A5A2B]" />
+                <input
+                  value={trackId}
+                  onChange={e => setTrackId(e.target.value.toUpperCase())}
+                  maxLength={30}
+                  placeholder="Order ID (e.g. QDM-89214)"
+                  aria-label="Order ID"
+                  className="min-w-0 flex-1 rounded-full bg-white px-3 py-1.5 text-[12px] text-[#2A1A10] ring-1 ring-[#E8D9C8] placeholder:text-[#A8907A] outline-none focus:ring-2 focus:ring-[#C9A46A]/60"
+                />
+                <button type="submit" disabled={!trackId.trim() || lookingUp}
+                  className="shrink-0 rounded-full bg-[#3B2618] px-3 py-1.5 text-[12px] font-semibold text-[#F3D9A4] transition hover:opacity-95 disabled:opacity-50">
+                  Track Order
+                </button>
+              </form>
             )}
 
             {/* Input box */}

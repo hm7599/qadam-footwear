@@ -36,7 +36,7 @@ async function seedInitialData() {
     const productCount = await Product.countDocuments();
     if (productCount === 0) {
       console.log('[Database] Seeding initial luxury products into MongoDB...');
-      await Product.insertMany(SEED_PRODUCTS);
+      await Product.insertMany(SEED_PRODUCTS.map(({ _id, ...p }: any) => p));
       console.log(`✅ [Database] Seeded ${SEED_PRODUCTS.length} products.`);
     } else {
       // Sync products to ensure latest image assets, slugs, and brand are up to date
