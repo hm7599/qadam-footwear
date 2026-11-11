@@ -8,13 +8,18 @@ interface WishlistContextType {
   clearWishlist: () => void;
 }
 
+// Stable key even for products without `id` (e.g. older MongoDB data)
+const keyOf = (p: Partial<Product> & { _id?: string }) => String(p.id || p._id || p.slug || '');
+
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('aura_wishlist');
-      return saved ? JSON.parse(saved) : [];
+      const list = saved ? JSON.parse(saved) : [];
+      // Drop broken entries saved while products had no id (they made every heart look selected)
+      return Array.isArray(list) ? list.filter((p: any) => keyOf(p)).map((p: any) => ({ ...p, id: keyOf(p) })) : [];
     } catch {
       return [];
     }
@@ -26,17 +31,19 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const toggleWishlist = (product: Product) => {
     setWishlist(prev => {
-      const exists = prev.some(p => p.id === product.id);
+      const k = keyOf(product);
+      if (!k) return prev;
+      const exists = prev.some(p => keyOf(p) === k);
       if (exists) {
-        return prev.filter(p => p.id !== product.id);
+        return prev.filter(p => keyOf(p) !== k);
       } else {
-        return [...prev, product];
+        return [...prev, { ...product, id: k }];
       }
     });
   };
 
   const isInWishlist = (productId: string) => {
-    return wishlist.some(p => p.id === productId);
+    return !!productId && wishlist.some(p => keyOf(p) === productId || p.id === productId);
   };
 
   const clearWishlist = () => {

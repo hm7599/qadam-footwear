@@ -112,7 +112,12 @@ const ProductSchema: Schema = new Schema(
       }
     ]
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    // Frontend keys products by `id` (wishlist, cart, compare) — always send one
+    toJSON: { virtuals: true, versionKey: false, transform: (_d: any, r: any) => { r.id = String(r.id || r._id); return r; } },
+    toObject: { virtuals: true },
+  }
 );
 
 export const Product = mongoose.model<IProduct>('Product', ProductSchema);
