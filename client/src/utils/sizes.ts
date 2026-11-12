@@ -38,3 +38,19 @@ export function pickDefaultSize(productSizes: number[] = []): number {
   if (!eu.length || eu.includes(DEFAULT_SIZE)) return DEFAULT_SIZE;
   return [...eu].sort((a, b) => a - b)[0];
 }
+
+/** Admin presets for quickly filling a product's sizes */
+export const SIZE_PRESETS: { label: string; sizes: number[] }[] = [
+  { label: 'Standard 39–46', sizes: [39, 40, 41, 42, 43, 44, 45, 46] },
+  { label: 'Small 36–41', sizes: [36, 37, 38, 39, 40, 41] },
+  { label: 'Regular 40–44', sizes: [40, 41, 42, 43, 44] },
+  { label: 'Big 44–47', sizes: [44, 45, 46, 47] },
+];
+
+/** Valid custom EU size: 30–50, whole or half sizes */
+export const isValidEuSize = (n: number) => Number.isFinite(n) && n >= 30 && n <= 50 && Number.isInteger(n * 2);
+
+/** Sizes to show as buttons: the standard grid plus any extra sizes this product has, sorted */
+export function displaySizes(productSizes: number[] = []): number[] {
+  return [...new Set([...SIZE_OPTIONS, ...productSizes.filter(s => s >= 30)])].sort((a, b) => a - b);
+}

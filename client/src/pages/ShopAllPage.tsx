@@ -5,7 +5,7 @@ import { ProductCard } from '../components/shop/ProductCard';
 import { useCurrency } from '../context/CurrencyContext';
 import { SlidersHorizontal, ArrowUpDown, X, Check, Filter, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SIZE_OPTIONS, sizeLabel } from '../utils/sizes';
+import { displaySizes, sizeLabel } from '../utils/sizes';
 
 interface ShopAllPageProps {
   products: Product[];
@@ -153,7 +153,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
     { id: 'men', label: 'Men’s Division' },
   ];
 
-  const SIZES = SIZE_OPTIONS;
+  const SIZES = useMemo(() => displaySizes(products.flatMap(p => p.sizes || [])), [products]);
 
   return (
     <div className="min-h-screen bg-white pt-28 sm:pt-32 pb-24">

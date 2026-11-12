@@ -86,7 +86,7 @@ router.post('/bulk', protect, adminOnly, async (req: AuthenticatedRequest, res) 
 
     const gender = ['men', 'women', 'unisex'].includes(String(r.gender || '').toLowerCase()) ? String(r.gender).toLowerCase() : 'men';
     const sizes = String(r.sizes || '')
-      .split(/[,;|s]+/).map(Number).filter(n => Number.isFinite(n) && n > 0);
+      .split(/[,;|\s]+/).map(Number).filter(n => Number.isFinite(n) && n > 0);
     const colorNames = String(r.colors || '').split(/[,;|]+/).map((c: string) => c.trim()).filter(Boolean);
 
     try {

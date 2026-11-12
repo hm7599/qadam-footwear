@@ -4,7 +4,7 @@ import { ImageUploader } from '../../components/admin/ImageUploader';
 import { useCurrency, CURRENCIES } from '../../context/CurrencyContext';
 import { api } from '../../utils/api';
 import { Product } from '../../types';
-import { SIZE_OPTIONS, sizeLabel } from '../../utils/sizes';
+import { SIZE_OPTIONS, SIZE_PRESETS, sizeLabel, isValidEuSize, displaySizes } from '../../utils/sizes';
 import { Plus, Edit, Trash2, Search, X, ChevronDown, Loader2, Package, FileSpreadsheet, Eye, EyeOff, ImageOff } from 'lucide-react';
 import { BulkProductUpload } from '../../components/admin/BulkProductUpload';
 import { alertDialog, confirmDialog } from '../../components/common/Dialog';
@@ -133,6 +133,7 @@ export const AdminProductsPage: React.FC = () => {
   const handleOpenAdd = () => {
     setEditingId(null);
     setEditingStatus('live');
+    setExtraSizes([]); setSizeInput(''); setSizeInputError('');
     setForm(EMPTY_FORM);
     setShowMore(false);
     setFormError('');
@@ -143,6 +144,7 @@ export const AdminProductsPage: React.FC = () => {
     setEditingId(p.id);
     setEditingStatus(p.status === 'draft' ? 'draft' : 'live');
     const euSizes = (p.sizes || []).filter(s => s >= 30);
+    setExtraSizes([]); setSizeInput(''); setSizeInputError('');
     setForm({
       name: p.name,
       tagline: p.tagline || '',
@@ -249,6 +251,38 @@ export const AdminProductsPage: React.FC = () => {
 
   const toggleSize = (s: number) =>
     set('sizes', form.sizes.includes(s) ? form.sizes.filter(x => x !== s) : [...form.sizes, s]);
+
+  // Manual sizes: type one or many EU sizes ("47", "38, 47.5" or "36-38")
+  const [sizeInput, setSizeInput] = useState('');
+  const [sizeInputError, setSizeInputError] = useState('');
+  const [extraSizes, setExtraSizes] = useState<number[]>([]); // custom sizes kept as chips even when unticked
+  const addSizes = () => {
+    const found: number[] = [];
+    for (const part of sizeInput.split(/[,;\s]+/).filter(Boolean)) {
+      const range = /^(\d+(?:\.5)?)-(\d+(?:\.5)?)$/.exec(part);
+      if (range) {
+        const [a, b] = [Number(range[1]), Number(range[2])].sort((x, y) => x - y);
+        for (let n = a; n <= b && found.length < 40; n += 1) found.push(n);
+      } else found.push(Number(part));
+    }
+    const bad = found.filter(n => !isValidEuSize(n));
+    if (!found.length || bad.length) {
+      setSizeInputError(bad.length ? `Invalid size: ${bad.join(', ')}. Use EU sizes 30–50 (e.g. 47 or 40.5).` : 'Type a size first.');
+      return;
+    }
+    setSizeInputError('');
+    setExtraSizes(x => [...new Set([...x, ...found])]);
+    set('sizes', [...new Set([...form.sizes, ...found])]);
+    setSizeInput('');
+  };
+  const removeSize = (s: number) => {
+    setExtraSizes(x => x.filter(v => v !== s));
+    setForm(f => {
+      const { [String(s)]: _gone, ...rest } = f.sizeStock;
+      return { ...f, sizes: f.sizes.filter(v => v !== s), sizeStock: rest };
+    });
+  };
+  const sizeChips = displaySizes([...form.sizes, ...extraSizes]);
 
   // Publish / unpublish a product
   const setLive = async (p: Product, live: boolean) => {
@@ -473,26 +507,57 @@ export const AdminProductsPage: React.FC = () => {
 
                 {/* Sizes */}
                 <section>
-                  <div className="mb-2 flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-neutral-900">Available sizes (UK · EU) *</h4>
-                    <button type="button" onClick={() => set('sizes', form.sizes.length === SIZE_OPTIONS.length ? [] : [...SIZE_OPTIONS])} className="text-xs font-semibold text-neutral-500 hover:text-black cursor-pointer">
-                      {form.sizes.length === SIZE_OPTIONS.length ? 'Clear all' : 'Select all'}
-                    </button>
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-neutral-900">Available sizes (EU/UK) * <span className="font-normal text-neutral-400">· {form.sizes.length} selected</span></h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {SIZE_PRESETS.map(p => (
+                        <button key={p.label} type="button" onClick={() => { setExtraSizes(x => [...new Set([...x, ...p.sizes])]); set('sizes', [...p.sizes]); }}
+                          className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-200 cursor-pointer">{p.label}</button>
+                      ))}
+                      <button type="button" onClick={() => set('sizes', [...sizeChips])} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 hover:bg-neutral-200 cursor-pointer">Select all</button>
+                      <button type="button" onClick={() => set('sizes', [])} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 cursor-pointer">Clear</button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
-                    {SIZE_OPTIONS.map(s => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => toggleSize(s)}
-                        className={`h-10 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                          form.sizes.includes(s) ? 'bg-neutral-950 text-white' : 'bg-white text-neutral-400 ring-1 ring-neutral-200 line-through hover:text-neutral-700'
-                        }`}
-                      >
-                        {sizeLabel(s)}
-                      </button>
-                    ))}
+                    {sizeChips.map(s => {
+                      const on = form.sizes.includes(s);
+                      const custom = !SIZE_OPTIONS.includes(s);
+                      return (
+                        <div key={s} className="relative">
+                          <button
+                            type="button"
+                            onClick={() => toggleSize(s)}
+                            title={on ? 'Click to hide this size' : 'Click to offer this size'}
+                            className={`relative h-10 w-full overflow-hidden rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                              on ? 'bg-neutral-950 text-white' : 'bg-white text-neutral-400 ring-1 ring-neutral-200 hover:text-neutral-700'
+                            }`}
+                          >
+                            {sizeLabel(s)}
+                            {!on && <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-[120%] -translate-x-1/2 -translate-y-1/2 -rotate-[20deg] bg-neutral-300" />}
+                          </button>
+                          {custom && (
+                            <button type="button" onClick={() => removeSize(s)} title="Delete this custom size"
+                              className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold leading-none text-white shadow cursor-pointer">×</button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+
+                  {/* Add sizes manually */}
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={sizeInput}
+                      onChange={e => { setSizeInput(e.target.value); setSizeInputError(''); }}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSizes(); } }}
+                      placeholder="Add EU size: 47  ·  38, 47.5  ·  36-38"
+                      className={`${inputCls} flex-1`}
+                    />
+                    <button type="button" onClick={addSizes} className="shrink-0 rounded-lg bg-neutral-950 px-4 text-sm font-semibold text-white hover:bg-neutral-800 cursor-pointer">Add</button>
+                  </div>
+                  {sizeInputError
+                    ? <p className="mt-1 text-xs text-red-600">{sizeInputError}</p>
+                    : <p className="mt-1 text-xs text-neutral-500">Black = offered, crossed = hidden. Custom sizes get a red × to delete them. UK size is calculated automatically (EU − 33).</p>}
 
                   {/* Stock per size */}
                   <label className="mt-4 flex items-center gap-2 text-sm text-neutral-800 cursor-pointer">
@@ -509,7 +574,7 @@ export const AdminProductsPage: React.FC = () => {
                           <label key={sz} className={`rounded-lg px-2 py-1.5 ring-1 ${zero ? 'bg-red-50/60 ring-red-200' : 'bg-white ring-neutral-200'}`}>
                             <span className="block text-[11px] font-medium text-neutral-500">Size {sizeLabel(sz)}</span>
                             <input value={v} inputMode="numeric" placeholder="0"
-                              onChange={e => set('sizeStock', { ...form.sizeStock, [String(sz)]: e.target.value.replace(/[^d]/g, '') })}
+                              onChange={e => set('sizeStock', { ...form.sizeStock, [String(sz)]: e.target.value.replace(/\D/g, '') })}
                               className="w-full bg-transparent text-sm font-semibold text-neutral-900 outline-none" />
                           </label>
                         );

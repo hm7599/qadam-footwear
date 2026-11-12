@@ -3,7 +3,7 @@ import { applyMeta } from '../utils/seo';
 import { recentlyViewed } from '../utils/recent';
 import { imgUrl, imgSrcSet } from '../utils/img';
 import React, { useState, useEffect, useRef } from 'react';
-import { SIZE_OPTIONS, DEFAULT_SIZE, sizeLabel, sizeLabelFull, pickDefaultSize } from '../utils/sizes';
+import { displaySizes, DEFAULT_SIZE, sizeLabel, sizeLabelFull, pickDefaultSize } from '../utils/sizes';
 import { StockAlertForm, PriceAlertButton, isSoldOut } from '../components/shop/AlertForms';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Product } from '../types';
@@ -402,7 +402,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                   </button>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
-                  {SIZE_OPTIONS.map(sz => {
+                  {displaySizes(product.sizes).map(sz => {
                     const available = !hasEuSizes || product.sizes.includes(sz);
                     const active = selectedSize === sz;
                     const out = available && isSoldOut(product, sz);
