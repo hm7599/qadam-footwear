@@ -43,30 +43,69 @@ const readAsDataUrl = (blob: Blob) =>
  * - keeps the original if compression would not make it smaller
  * GIFs are left untouched so animation is preserved.
  */
+// Vercel rejects request bodies over ~4.5 MB and the server accepts at most 5 MB,
+// so every upload is kept under this size (base64 adds ~33%).
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+const SERVER_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
 export async function compressImage(file: File, maxSide = 1920, quality = 0.86): Promise<string> {
-  if (file.type === 'image/gif') return readAsDataUrl(file);
+  if (file.type === 'image/gif') {
+    if (file.size > MAX_UPLOAD_BYTES) throw new Error('GIF is too large (max 3 MB).');
+    return readAsDataUrl(file);
+  }
 
   const bitmap = await createImageBitmap(file).catch(() => null);
-  if (!bitmap) return readAsDataUrl(file);
+  if (!bitmap) {
+    if (SERVER_TYPES.includes(file.type) && file.size <= MAX_UPLOAD_BYTES) return readAsDataUrl(file);
+    throw new Error('This photo format is not supported. Please use JPG, PNG or WEBP.');
+  }
 
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
+  const encode = async (side: number, q: number): Promise<Blob | null> => {
+    const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    let blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/webp', q));
+    // Some browsers (older Safari) can't encode WebP and return PNG instead; use JPEG then
+    if (!blob || blob.type !== 'image/webp') {
+      blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/jpeg', q));
+    }
+    return blob;
+  };
 
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return readAsDataUrl(file);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close?.();
+  try {
+    let side = maxSide;
+    let q = quality;
+    let blob = await encode(side, q);
+    // Keep the original only if it is already small, allowed and smaller
+    if (blob && blob.size >= file.size && SERVER_TYPES.includes(file.type) && file.size <= MAX_UPLOAD_BYTES) {
+      return readAsDataUrl(file);
+    }
+    while (blob && blob.size > MAX_UPLOAD_BYTES && side > 600) {
+      side = Math.round(side * 0.8);
+      q = Math.max(0.6, q - 0.08);
+      blob = await encode(side, q);
+    }
+    if (!blob) throw new Error('Could not process this photo.');
+    if (blob.size > MAX_UPLOAD_BYTES) throw new Error('Photo is too large even after compression.');
+    return readAsDataUrl(blob);
+  } finally {
+    bitmap.close?.();
+  }
+}
 
-  const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, 'image/webp', quality));
-  // Some browsers can't encode WebP and silently return PNG; fall back to original if not smaller
-  if (!blob || blob.size >= file.size) return readAsDataUrl(file);
-  return readAsDataUrl(blob);
+/** Reads a JSON response safely (Vercel/proxy errors such as 413 return HTML or plain text) */
+async function readJson(res: Response): Promise<any> {
+  const text = await res.text();
+  try { return text ? JSON.parse(text) : {}; } catch {
+    if (res.status === 413) return { message: 'Photo is too large to upload.' };
+    return { message: `Server error (${res.status}). Please try again.` };
+  }
 }
 
 export const api = {
@@ -109,7 +148,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify({ data: dataUrl }),
     });
-    const data = await res.json();
+    const data = await readJson(res);
     if (!res.ok) throw new Error(data.message || 'Upload failed');
     return { url: data.data.url, before: file.size, after };
   },

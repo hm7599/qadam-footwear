@@ -2,21 +2,16 @@ import React, { useState } from 'react';
 import { Ruler, PenLine, TableProperties, ArrowRight, Footprints, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+// Same EU/UK pairs as the store (UK = EU − 33)
 const SIZES = [
-  { usMen: 6, uk: 5.5, eu: 38.5, cm: 24.0, inches: 9.4 },
-  { usMen: 6.5, uk: 6, eu: 39, cm: 24.5, inches: 9.6 },
-  { usMen: 7, uk: 6.5, eu: 40, cm: 25.0, inches: 9.8 },
-  { usMen: 7.5, uk: 7, eu: 40.5, cm: 25.5, inches: 10.0 },
-  { usMen: 8, uk: 7.5, eu: 41, cm: 26.0, inches: 10.2 },
-  { usMen: 8.5, uk: 8, eu: 42, cm: 26.5, inches: 10.4 },
-  { usMen: 9, uk: 8.5, eu: 42.5, cm: 27.0, inches: 10.6 },
-  { usMen: 9.5, uk: 9, eu: 43, cm: 27.5, inches: 10.8 },
-  { usMen: 10, uk: 9.5, eu: 44, cm: 28.0, inches: 11.0 },
-  { usMen: 10.5, uk: 10, eu: 44.5, cm: 28.5, inches: 11.2 },
-  { usMen: 11, uk: 10.5, eu: 45, cm: 29.0, inches: 11.4 },
-  { usMen: 11.5, uk: 11, eu: 45.5, cm: 29.5, inches: 11.6 },
-  { usMen: 12, uk: 11.5, eu: 46, cm: 30.0, inches: 11.8 },
-  { usMen: 13, uk: 12.5, eu: 47.5, cm: 31.0, inches: 12.2 },
+  { usMen: 7, uk: 6, eu: 39, cm: 24.5, inches: 9.6 },
+  { usMen: 8, uk: 7, eu: 40, cm: 25.0, inches: 9.8 },
+  { usMen: 9, uk: 8, eu: 41, cm: 26.0, inches: 10.2 },
+  { usMen: 10, uk: 9, eu: 42, cm: 26.5, inches: 10.4 },
+  { usMen: 11, uk: 10, eu: 43, cm: 27.5, inches: 10.8 },
+  { usMen: 12, uk: 11, eu: 44, cm: 28.0, inches: 11.0 },
+  { usMen: 13, uk: 12, eu: 45, cm: 29.0, inches: 11.4 },
+  { usMen: 14, uk: 13, eu: 46, cm: 30.0, inches: 11.8 },
 ];
 
 const WIDTHS = [

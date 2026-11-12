@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Bot, Send, Sparkles, RotateCcw } from 'lucide-react';
 import { api } from '../../utils/api';
 import { AdminConversation } from '../../utils/chatApi';
+import { sizeLabel } from '../../utils/sizes';
 
 /* Admin-only helper chatbot. Rule-based (no LLM backend):
    order lookup, reply suggestions, chat summary, quick facts. */
@@ -126,7 +127,7 @@ export const AdminAssistant: React.FC<Props> = ({ convo, templates, format, onIn
     const num = `${code.toUpperCase()}-${digits}`;
     try {
       const o = await api.getOrderByNumber(num);
-      const items = o.items.map(i => `• ${i.name} (${i.color}, UK ${i.size}) ×${i.quantity}`).join('\n');
+      const items = o.items.map(i => `• ${i.name} (${i.color}, Size ${sizeLabel(i.size)}) ×${i.quantity}`).join('\n');
       const first = o.customer.name.split(/\s+/)[0];
       const statusLine: Record<string, string> = {
         pending: `aap ka order ${num} receive ho gaya hai aur jald confirm kar diya jaye ga.`,

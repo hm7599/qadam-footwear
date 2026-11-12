@@ -73,6 +73,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Make sure the database is connected before any API request (serverless cold starts)
+let dbReady: Promise<void> | null = null;
+export const ready = () => (dbReady ??= connectDB());
+app.use('/api', (_req, _res, next) => { ready().then(() => next(), next); });
+
 // Production: never take orders or accounts that can't be saved permanently
 app.use('/api', (req, res, next) => {
   if (!IS_PROD || isMongoConnected || req.method === 'GET') return next();
@@ -100,11 +105,6 @@ const staticOpts = {
 };
 app.use(express.static(clientDistPath, staticOpts));
 app.use(express.static(clientPublicPath, staticOpts));
-
-// Make sure the database is connected before any API request (serverless cold starts)
-let dbReady: Promise<void> | null = null;
-export const ready = () => (dbReady ??= connectDB());
-app.use('/api', (_req, _res, next) => { ready().then(() => next(), next); });
 
 // ── API ───────────────────────────────────────────────
 app.use('/api/products', productRoutes);

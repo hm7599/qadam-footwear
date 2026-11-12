@@ -43,6 +43,7 @@ export const ImageUploader: React.FC<Props> = ({ images, onChange, max = 10 }) =
     const urls: string[] = [];
     const newSizes: Record<string, { before: number; after: number }> = {};
     let failed = 0;
+    const reasons = new Set<string>();
     let before = 0;
     let after = 0;
     for (const file of list) {
@@ -52,8 +53,9 @@ export const ImageUploader: React.FC<Props> = ({ images, onChange, max = 10 }) =
         newSizes[r.url] = { before: r.before, after: r.after };
         before += r.before;
         after += r.after;
-      } catch {
+      } catch (e: any) {
         failed++;
+        if (e?.message) reasons.add(e.message);
       }
       setProgress(p => (p ? { ...p, done: p.done + 1 } : p));
     }
@@ -64,7 +66,7 @@ export const ImageUploader: React.FC<Props> = ({ images, onChange, max = 10 }) =
 
     const skipped = all.length - list.length;
     if (failed || skipped) {
-      setError([failed && `${failed} failed to upload`, skipped && `${skipped} skipped`].filter(Boolean).join(', ') + '.');
+      setError([failed && `${failed} failed to upload${reasons.size ? ` (${[...reasons].join('; ')})` : ''}`, skipped && `${skipped} skipped`].filter(Boolean).join(', ') + '.');
     }
   };
 

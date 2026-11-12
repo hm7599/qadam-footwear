@@ -7,6 +7,7 @@ import { X, Heart, ShoppingBag, ArrowRight, Check, Star, ShieldCheck, Truck } fr
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { imgUrl } from '../../utils/img';
+import { sizeLabel, sizeLabelFull, pickDefaultSize } from '../../utils/sizes';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -16,7 +17,7 @@ interface QuickViewModalProps {
 
 export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClose }) => {
   const [selectedColorIdx, setSelectedColorIdx] = useState(0);
-  const [selectedSize, setSelectedSize] = useState<number>(9);
+  const [selectedSize, setSelectedSize] = useState<number>(() => pickDefaultSize(product?.sizes));
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [sizeError, setSizeError] = useState(false);
@@ -188,9 +189,9 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               <div className="space-y-2 mb-5 font-tech">
                 <div className="flex justify-between text-[10px] uppercase tracking-wider">
                   <span className={sizeError ? 'text-red-600 font-bold' : 'text-neutral-500'}>
-                    {sizeError ? 'Select size' : 'Size (US):'}
+                    {sizeError ? 'Select size' : 'Size (EU/UK):'}
                   </span>
-                  <span className="text-neutral-400 text-[9px]">EU {(selectedSize || 9) + 33}</span>
+                  <span className="text-neutral-400 text-[9px]">{selectedSize ? sizeLabelFull(selectedSize) : ''}</span>
                 </div>
                 <div className="grid grid-cols-6 gap-1.5">
                   {product.sizes.map(sz => (
@@ -206,7 +207,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                           : 'border border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-black hover:text-black'
                       }`}
                     >
-                      {sz}
+                      {sizeLabel(sz)}
                     </button>
                   ))}
                 </div>

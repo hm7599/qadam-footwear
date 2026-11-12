@@ -1,16 +1,18 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { protect, adminOnly } from '../middleware/auth.js';
 import { securityEvent, rateLimit } from '../security/index.js';
+import { isMongoConnected } from '../config/db.js';
+import { UploadedImage } from '../models/UploadedImage.js';
 import sharp from 'sharp';
 
 const router = Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Files go into client/public/images/uploads, which the server already serves statically
+// Fallback local disk directory when MongoDB is not connected
 const UPLOAD_DIR = path.resolve(__dirname, '../../../client/public/images/uploads');
 
 const ALLOWED: Record<string, string> = {
@@ -19,7 +21,58 @@ const ALLOWED: Record<string, string> = {
   'image/webp': 'webp',
   'image/gif': 'gif',
 };
+const EXT_TO_MIME: Record<string, string> = {
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  gif: 'image/gif',
+};
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+
+function setImageCacheHeaders(req: Request, res: Response, fileName: string, contentType: string): boolean {
+  const etag = `"${fileName}"`;
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  res.setHeader('ETag', etag);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  if (req.headers['if-none-match'] === etag) {
+    res.status(304).end();
+    return true;
+  }
+  return false;
+}
+
+// GET /api/uploads/:fileName — serve uploaded images from MongoDB (or local disk fallback)
+router.get('/:fileName', async (req, res) => {
+  const rawName = req.params.fileName;
+  const fileName = Array.isArray(rawName) ? rawName[0] : rawName;
+  if (!fileName || fileName === '.' || fileName === '..' || !/^[a-zA-Z0-9._-]+$/.test(fileName)) {
+    return res.status(400).json({ success: false, message: 'Invalid file name.' });
+  }
+
+  try {
+    if (isMongoConnected) {
+      const doc = await UploadedImage.findOne({ fileName }).select('contentType data');
+      if (doc?.data) {
+        if (setImageCacheHeaders(req, res, fileName, doc.contentType)) return;
+        return res.send(doc.data);
+      }
+    }
+
+    const diskPath = path.join(UPLOAD_DIR, fileName);
+    if (fs.existsSync(diskPath)) {
+      const ext = path.extname(fileName).slice(1).toLowerCase();
+      const mime = EXT_TO_MIME[ext] || 'application/octet-stream';
+      if (setImageCacheHeaders(req, res, fileName, mime)) return;
+      return res.sendFile(diskPath);
+    }
+
+    return res.status(404).json({ success: false, message: 'Image not found.' });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message || 'Failed to load image.' });
+  }
+});
 
 // POST /api/uploads  body: { data: "data:image/png;base64,...." }
 router.post('/', rateLimit('upload', 60, 10 * 60000), protect, adminOnly, async (req, res) => {
@@ -62,12 +115,25 @@ router.post('/', rateLimit('upload', 60, 10 * 60000), protect, adminOnly, async 
   }
 
   try {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
     const fileName = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${ext}`;
-    fs.writeFileSync(path.join(UPLOAD_DIR, fileName), buffer);
-    res.json({ success: true, data: { url: `/images/uploads/${fileName}` } });
+    if (isMongoConnected) {
+      await UploadedImage.create({
+        fileName,
+        contentType: mime,
+        data: buffer,
+        size: buffer.length,
+      });
+    } else {
+      fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+      fs.writeFileSync(path.join(UPLOAD_DIR, fileName), buffer);
+    }
+    res.json({ success: true, data: { url: `/api/uploads/${fileName}` } });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: err.message || 'Upload failed.' });
+    const msg =
+      err?.code === 'EROFS'
+        ? 'Server storage requires an active database connection.'
+        : err?.message || 'Upload failed.';
+    res.status(500).json({ success: false, message: msg });
   }
 });
 

@@ -5,6 +5,7 @@ import { ProductCard } from '../components/shop/ProductCard';
 import { useCurrency } from '../context/CurrencyContext';
 import { SlidersHorizontal, ArrowUpDown, X, Check, Filter, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SIZE_OPTIONS, sizeLabel } from '../utils/sizes';
 
 interface ShopAllPageProps {
   products: Product[];
@@ -152,7 +153,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
     { id: 'men', label: 'Men’s Division' },
   ];
 
-  const SIZES = [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13];
+  const SIZES = SIZE_OPTIONS;
 
   return (
     <div className="min-h-screen bg-white pt-28 sm:pt-32 pb-24">
@@ -288,7 +289,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
                   {/* Size Filter */}
                   <div>
                     <h4 className="font-bold uppercase tracking-[0.2em] text-black mb-3 pb-2 border-b border-neutral-200 text-[10px]">
-                      Size (US)
+                      Size (EU/UK)
                     </h4>
                     <div className="grid grid-cols-4 gap-1">
                       {SIZES.map(sz => (
@@ -301,7 +302,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
                               : 'border-neutral-300 bg-white text-neutral-600 hover:border-black hover:text-black'
                           }`}
                         >
-                          {sz}
+                          {sizeLabel(sz)}
                         </button>
                       ))}
                     </div>
@@ -381,7 +382,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
             )}
             {selectedSize && (
               <span className="flex items-center gap-1 bg-neutral-100 border border-neutral-300 px-2.5 py-1 text-black uppercase">
-                Size {selectedSize} US
+                Size {sizeLabel(selectedSize)}
                 <button onClick={() => setSelectedSize(null)} className="hover:text-red-500">✕</button>
               </span>
             )}

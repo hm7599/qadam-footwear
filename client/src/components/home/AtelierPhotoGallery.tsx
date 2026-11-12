@@ -551,7 +551,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                               : 'bg-white text-neutral-800 ring-1 ring-neutral-200 hover:ring-neutral-900'
                           }`}
                         >
-                          {sizeLabel(sz).replace('UK ', '')}
+                          {sizeLabel(sz)}
                         </button>
                       );
                     })}

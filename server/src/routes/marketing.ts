@@ -559,7 +559,7 @@ router.post('/stock-alerts/:id/notify', ...admin, wrap(async (req, res) => {
   if (!a) return fail(res, 404, 'Alert not found.');
   const p: any = await DataStore.getProductByIdOrSlug(a.productId);
   if (!p) return fail(res, 404, 'Product no longer exists.');
-  if (!sizeAvailable(p, a.size) && !req.body?.force) return fail(res, 400, `Size ${a.size} is still out of stock. Restock it first.`);
+  if (!sizeAvailable(p, a.size) && !req.body?.force) return fail(res, 400, `Size ${a.size}/${Number(a.size) - 33} is still out of stock. Restock it first.`);
   const n = await notifyStockAlert(a, p, `manual-${Date.now()}`);
   await StockAlerts.update(a.id, { status: 'notified', notifiedAt: new Date().toISOString() });
   ok(res, { created: n }, 'Alert sent / queued.');

@@ -14,6 +14,7 @@ import { api } from '../../utils/api';
 import { botAnswer, BotAction, BotReply, START_CHIPS, chipToQuestion } from '../../utils/chatBot';
 import { chatApi, savedChat, forgetChat, LiveConversation, ChatMessage } from '../../utils/chatApi';
 import { bindScrollContain } from '../../utils/scrollContain';
+import { sizeLabel } from '../../utils/sizes';
 
 /** A message on screen. Rich parts (products, buttons, order card) only exist for this visit. */
 type ViewMsg = {
@@ -93,7 +94,7 @@ const OrderCard: React.FC<{
             {it.image && <img src={imgUrl(it.image, 96)} alt="" className="h-10 w-10 shrink-0 rounded-lg bg-[#F6EFE4] object-cover" />}
             <div className="min-w-0 flex-1">
               <p className="truncate text-[12px] font-semibold text-[#2A1A10]">{it.name}</p>
-              <p className="text-[11px] text-[#8A6A52]">{it.color ? `${it.color} · ` : ''}Size {it.size} · ×{it.quantity}</p>
+              <p className="text-[11px] text-[#8A6A52]">{it.color ? `${it.color} · ` : ''}Size {sizeLabel(it.size)} · ×{it.quantity}</p>
             </div>
             <p className="shrink-0 text-[12px] font-semibold text-[#8A5A2B]">{formatPrice((it.price || 0) * it.quantity)}</p>
           </div>

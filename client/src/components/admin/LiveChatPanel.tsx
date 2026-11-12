@@ -9,6 +9,7 @@ import { chatApi, AdminChatSummary, AdminConversation } from '../../utils/chatAp
 import { api } from '../../utils/api';
 import { AdminAssistant } from './AdminAssistant';
 import { Order } from '../../types';
+import { sizeLabel } from '../../utils/sizes';
 
 const ago = (iso: string) => {
   const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -248,7 +249,7 @@ const OrderInfoPanel: React.FC<{ orderNumbers: string[] }> = ({ orderNumbers }) 
                   <div className="space-y-1 rounded-lg bg-[#FBF7F1] p-2">
                     {(o.items || []).slice(0, 3).map((it, i) => (
                       <div key={i} className="flex justify-between gap-2 text-[#3B2618]">
-                        <span className="truncate">{it.name} {it.color ? `(${it.color})` : ''} · Sz {it.size} ×{it.quantity}</span>
+                        <span className="truncate">{it.name} {it.color ? `(${it.color})` : ''} · Size {sizeLabel(it.size)} ×{it.quantity}</span>
                         <span className="shrink-0 font-semibold">{fmtPKR((it.price || 0) * it.quantity)}</span>
                       </div>
                     ))}
