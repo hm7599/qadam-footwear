@@ -38,7 +38,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
   const [addedToCart, setAddedToCart] = useState(false);
   const flipTimer = React.useRef<number | undefined>(undefined);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'specs' | 'materials' | 'delivery'>('specs');
+  const [activeTab, setActiveTab] = useState<'specs' | 'delivery'>('specs');
 
   // Review modal
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -523,14 +523,6 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
               Details
             </button>
             <button
-              onClick={() => setActiveTab('materials')}
-              className={`pb-3 font-bold transition-all border-b-2 ${
-                activeTab === 'materials' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-black'
-              }`}
-            >
-              Materials
-            </button>
-            <button
               onClick={() => setActiveTab('delivery')}
               className={`pb-3 font-bold transition-all border-b-2 ${
                 activeTab === 'delivery' ? 'border-black text-black' : 'border-transparent text-neutral-400 hover:text-black'
@@ -554,32 +546,6 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
               ) : (
                 <p className="text-sm text-neutral-400 italic">No description provided for this product.</p>
               )}
-            </div>
-          )}
-
-          {activeTab === 'materials' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-sans">
-              <div className="border border-neutral-200 p-6 bg-white space-y-2">
-                <span className="font-tech text-[9px] uppercase tracking-widest text-neutral-400 block">LAYER 01</span>
-                <h4 className="font-display text-base font-bold text-neutral-900">Real Italian Leather</h4>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  Soft, strong and breathable leather from Italy. It shapes to your foot the more you wear it.
-                </p>
-              </div>
-              <div className="border border-neutral-200 p-6 bg-white space-y-2">
-                <span className="font-tech text-[9px] uppercase tracking-widest text-neutral-400 block">LAYER 02</span>
-                <h4 className="font-display text-base font-bold text-neutral-900">Soft Cushioned Sole</h4>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  A light, bouncy sole that keeps your feet comfortable all day and does not flatten over time.
-                </p>
-              </div>
-              <div className="border border-neutral-200 p-6 bg-white space-y-2">
-                <span className="font-tech text-[9px] uppercase tracking-widest text-neutral-400 block">LAYER 03</span>
-                <h4 className="font-display text-base font-bold text-neutral-900">Supportive Inner Plate</h4>
-                <p className="text-xs text-neutral-600 leading-relaxed">
-                  A light inner plate supports your arch and helps every step feel easy.
-                </p>
-              </div>
             </div>
           )}
 
