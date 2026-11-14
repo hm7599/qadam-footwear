@@ -191,7 +191,7 @@ export const CartDrawer: React.FC = () => {
                     <div className="flex items-center justify-center gap-2 text-[9.5px] uppercase tracking-wider text-neutral-500 pt-1">
                       <span>✓ Cash on Delivery (COD)</span>
                       <span>•</span>
-                      <span>Free Express Courier Across Pakistan</span>
+                      <span>Free Courier Across Pakistan</span>
                     </div>
 
                     <Link

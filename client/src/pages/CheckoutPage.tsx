@@ -10,15 +10,13 @@ import { CouponBox, FreeShippingBar, PriceSummary } from '../components/cart/Pro
 import { usePaymentSettings, onlineMethodNames } from '../utils/storeSettings';
 import confetti from 'canvas-confetti';
 import {
-  CreditCard, Truck, Lock, ArrowRight, ShoppingBag, X, Zap, Check,
+  CreditCard, Truck, Lock, ArrowRight, ShoppingBag, X, Check,
   User, Mail, Phone, MapPin, Building2, Loader2, ShieldCheck, RotateCcw, AlertCircle,
 } from 'lucide-react';
 
 interface CheckoutPageProps {
   modal?: boolean;
 }
-
-const EXPRESS_FEE = 15; // base currency; shown in Rs. via formatPrice
 
 // Pakistani mobile: 03XXXXXXXXX, +923XXXXXXXXX or 923XXXXXXXXX (spaces / dashes allowed)
 export const isPkMobile = (v: string) => /^(?:\+92|0092|92|0)3\d{9}$/.test(v.replace(/[\s-]/g, ''));
@@ -158,7 +156,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
     }
   };
 
-  const OptionCard: React.FC<{ active: boolean; onClick: () => void; icon: React.ElementType; title: string; text: string; right?: string }> = ({ active, onClick, icon: Icon, title, text, right }) => (
+  const OptionCard: React.FC<{ active: boolean; onClick?: () => void; icon: React.ElementType; title: string; text: string; right?: string }> = ({ active, onClick, icon: Icon, title, text, right }) => (
     <button
       type="button"
       onClick={onClick}
@@ -256,24 +254,13 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
               {/* 3. Delivery */}
               <section className="rounded-3xl bg-white p-5 ring-1 ring-neutral-200/70 sm:p-7">
                 <StepHeader n={3} title="Delivery" />
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <OptionCard
-                    active={shippingMethod === 'standard'}
-                    onClick={() => setShippingMethod('standard')}
-                    icon={Truck}
-                    title="Standard"
-                    text="3–5 working days"
-                    right={quote ? (quote.freeShipping.unlocked && shippingMethod === 'standard' ? 'Free' : formatPrice(quote.standardFee)) : '—'}
-                  />
-                  <OptionCard
-                    active={shippingMethod === 'express'}
-                    onClick={() => setShippingMethod('express')}
-                    icon={Zap}
-                    title="Express"
-                    text="1–2 working days"
-                    right={formatPrice(quote?.expressFee ?? EXPRESS_FEE)}
-                  />
-                </div>
+                <OptionCard
+                  active={true}
+                  icon={Truck}
+                  title="Standard Delivery"
+                  text="3–5 working days nationwide across Pakistan"
+                  right={quote ? (quote.freeShipping.unlocked ? 'Free' : formatPrice(quote.standardFee)) : '—'}
+                />
               </section>
 
               {/* 4. Payment */}

@@ -340,7 +340,7 @@ const PromoComposer: React.FC<{ onGoOutbox?: () => void }> = ({ onGoOutbox }) =>
           </button>
           <button
             type="button"
-            onClick={() => applyPreset('Free Express Delivery', 'Free nationwide express courier delivery on all orders placed today. Pay via Cash on Delivery.', '/shop')}
+            onClick={() => applyPreset('Free Delivery', 'Free nationwide courier delivery on all orders placed today. Pay via Cash on Delivery.', '/shop')}
             className="rounded-lg bg-neutral-100 hover:bg-neutral-200 px-2.5 py-1 text-xs font-medium text-neutral-800 transition-colors cursor-pointer"
           >
             🚚 Free Delivery Weekend
@@ -778,10 +778,9 @@ const Shipping: React.FC<{ products: Product[] }> = ({ products }) => {
     <div className="space-y-4">
       <div className={`${card} space-y-5 p-5`}>
         <Toggle checked={s.enabled} onChange={v => set('enabled', v)} label="Free delivery above a minimum order" hint="Shows the progress bar in the bag, cart, checkout and homepage." />
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Free delivery from (Rs.)"><input {...num('thresholdRs')} /></Field>
           <Field label="Standard delivery fee (Rs.)"><input {...num('standardFeeRs')} /></Field>
-          <Field label="Express delivery fee (Rs.)" hint="Express is never free"><input {...num('expressFeeRs')} /></Field>
         </div>
         <Toggle checked={s.combineWithCoupons} onChange={v => set('combineWithCoupons', v)} label="Allow free delivery together with discount codes" hint="Off = using a discount code removes free delivery" />
       </div>

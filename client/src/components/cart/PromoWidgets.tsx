@@ -137,17 +137,17 @@ export const PriceSummary: React.FC<{ className?: string }> = ({ className = '' 
         <div className="flex justify-between text-emerald-700"><dt>Discount {promoCode && <span className="text-xs">({promoCode})</span>}</dt><dd className="font-medium">−{formatPrice(discount)}</dd></div>
       )}
       <div className="flex justify-between text-neutral-600">
-        <dt>Delivery {shippingMethod === 'express' && <span className="text-xs text-neutral-400">(Express)</span>}</dt>
+        <dt>Delivery</dt>
         <dd className="font-medium text-neutral-900">
           {freeDelivery ? (
             <span className="text-emerald-700">
-              {quote && quote.standardFee > 0 && shippingMethod === 'standard' && <s className="mr-1.5 font-normal text-neutral-400">{formatPrice(quote.standardFee)}</s>}
+              {quote && quote.standardFee > 0 && <s className="mr-1.5 font-normal text-neutral-400">{formatPrice(quote.standardFee)}</s>}
               Free
             </span>
           ) : formatPrice(shippingCost)}
         </dd>
       </div>
-      {!freeDelivery && fs?.enabled && shippingMethod === 'standard' && fs.remaining > 0 && (
+      {!freeDelivery && fs?.enabled && fs.remaining > 0 && (
         <p className="text-right text-[11px] text-neutral-400">Free over {formatPrice(fs.threshold)}</p>
       )}
       <div className="flex justify-between border-t border-neutral-200 pt-3 text-base font-semibold text-neutral-950">

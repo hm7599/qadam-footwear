@@ -262,7 +262,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               <div className="flex items-center justify-between font-tech text-[10px] text-neutral-500 pt-1">
                 <div className="flex items-center gap-1.5">
                   <Truck className="h-3 w-3 text-black" />
-                  <span>Complimentary Global Express</span>
+                  <span>Nationwide Delivery</span>
                 </div>
                 <Link
                   to={`/product/${product.slug}`}
