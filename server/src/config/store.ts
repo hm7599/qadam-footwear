@@ -224,6 +224,8 @@ export const DataStore = {
   },
 
   async updateProduct(id: string, updates: any) {
+    // Counter is owned by the wishlist endpoint; never overwrite it from a stale admin form
+    if (updates) { updates = { ...updates }; delete updates.wishlistCount; }
     if (isMongoConnected) {
       try {
         return await Product.findOneAndUpdate(
@@ -241,6 +243,24 @@ export const DataStore = {
       return memoryProducts[index];
     }
     return null;
+  },
+
+  async bumpWishlist(id: string, delta: 1 | -1) {
+    if (isMongoConnected) {
+      try {
+        const or: any[] = [{ id }, { slug: id }];
+        if (/^[0-9a-fA-F]{24}$/.test(id)) or.push({ _id: id });
+        const filter: any = { $or: or };
+        if (delta < 0) filter.wishlistCount = { $gt: 0 };
+        await Product.updateOne(filter, { $inc: { wishlistCount: delta } });
+        return true;
+      } catch (e) {
+        console.warn('Mongo bumpWishlist fallback:', e);
+      }
+    }
+    const p = memoryProducts.find(x => x.id === id || x._id === id || x.slug === id);
+    if (p) p.wishlistCount = Math.max(0, (Number(p.wishlistCount) || 0) + delta);
+    return !!p;
   },
 
   async deleteProduct(id: string) {
@@ -684,8 +704,20 @@ export const DataStore = {
       });
     });
 
+    const topWishlisted = products
+      .filter(pr => Number(pr.wishlistCount) > 0)
+      .sort((x, y) => Number(y.wishlistCount) - Number(x.wishlistCount))
+      .slice(0, 6)
+      .map(pr => {
+        const id = pr.id || String(pr._id);
+        return { id, slug: pr.slug, name: pr.name, image: pr.images?.[0] || '', count: Number(pr.wishlistCount), sold: top[id]?.qty || 0, price: pr.salePrice || pr.price };
+      });
+    const totalWishlisted = products.reduce((a, pr) => a + (Number(pr.wishlistCount) || 0), 0);
+
     const totalRevenue = sum(sold);
     return {
+      topWishlisted,
+      totalWishlisted,
       totalRevenue,
       totalOrders: orders.length,
       totalProducts: products.length,

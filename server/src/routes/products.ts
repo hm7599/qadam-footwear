@@ -199,6 +199,16 @@ router.delete('/:id', protect, adminOnly, async (req: AuthenticatedRequest, res)
   }
 });
 
+// POST count a wishlist add/remove (anonymous; feeds the admin "Most wishlisted" card)
+router.post('/:id/wishlist', rateLimit('wishlist', 60, 10 * 60000), async (req, res) => {
+  try {
+    const ok = await DataStore.bumpWishlist(String(req.params.id), req.body?.on === false ? -1 : 1);
+    res.json({ success: ok });
+  } catch (err: any) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // POST add customer review
 router.post('/:id/review', rateLimit('review', 5, 60 * 60000), async (req, res) => {
   try {

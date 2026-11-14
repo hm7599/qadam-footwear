@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Wallet, ShoppingBag, Package, Users, TrendingUp, TrendingDown, Clock, AlertTriangle, ArrowRight, Plus,
-  Megaphone, Settings, Radio, CreditCard, RefreshCw, Loader2, Sun, Moon, Sunrise,
+  Megaphone, Settings, Heart, Radio, CreditCard, RefreshCw, Loader2, Sun, Moon, Sunrise,
 } from 'lucide-react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { api } from '../../utils/api';
@@ -19,6 +19,8 @@ interface Dash {
   statusCounts: Record<string, number>; awaitingApproval: number; unpaidOnline: number;
   topProducts: Array<{ id: string; name: string; image: string; qty: number; revenue: number }>;
   lowStock: Array<{ id: string; name: string; image: string; size: string; left: number }>;
+  topWishlisted?: Array<{ id: string; slug: string; name: string; image: string; count: number; sold: number; price: number }>;
+  totalWishlisted?: number;
   daily: Array<{ date: string; revenue: number; orders: number }>;
   recentOrders: any[];
 }
@@ -60,7 +62,6 @@ export const AdminOverviewPage: React.FC = () => {
   const [error, setError] = useState('');
   const [live, setLive] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [hover, setHover] = useState<number | null>(null);
 
   const load = async () => {
     setRefreshing(true);
@@ -77,7 +78,7 @@ export const AdminOverviewPage: React.FC = () => {
 
   const g = greeting();
   const firstName = (user?.name || 'Admin').replace(/^QADAM\s+/i, '').split(' ')[0] || 'Admin';
-  const maxDay = useMemo(() => Math.max(1, ...(d?.daily || []).map(x => x.revenue)), [d]);
+  const maxWish = useMemo(() => Math.max(1, ...(d?.topWishlisted || []).map(x => x.count)), [d]);
   const totalStatus = d ? Object.values(d.statusCounts).reduce((a, b) => a + b, 0) : 0;
 
   return (
@@ -161,28 +162,36 @@ export const AdminOverviewPage: React.FC = () => {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-              {/* Sales chart */}
+              {/* Most wishlisted — what customers want */}
               <section className={`${card} p-5 lg:col-span-2`}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h2 className="text-[15px] font-semibold text-neutral-950">Sales — last 30 days</h2>
-                    <p className="text-xs text-neutral-400">
-                      {hover !== null ? `${new Date(d.daily[hover].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}: ${formatPrice(d.daily[hover].revenue)} · ${d.daily[hover].orders} order(s)` : `${formatPrice(d.daily.reduce((a, x) => a + x.revenue, 0))} from ${d.daily.reduce((a, x) => a + x.orders, 0)} orders`}
-                    </p>
+                    <h2 className="flex items-center gap-1.5 text-[15px] font-semibold text-neutral-950"><Heart className="h-4 w-4 text-rose-500" /> Most wishlisted</h2>
+                    <p className="text-xs text-neutral-400">{d.totalWishlisted ? `${d.totalWishlisted} heart${d.totalWishlisted === 1 ? '' : 's'} across the store · what shoppers want but haven't bought yet` : 'What shoppers save for later'}</p>
                   </div>
                   <button onClick={load} aria-label="Refresh" className="rounded-lg p-2 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 cursor-pointer"><RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
                 </div>
-                <div className="relative mt-5 flex h-52 items-end gap-[3px] bg-[linear-gradient(to_top,#F3ECE1_1px,transparent_1px)] bg-[length:100%_25%]" onMouseLeave={() => setHover(null)}>
-                  {d.daily.map((x, i) => (
-                    <div key={x.date} className="flex h-full flex-1 flex-col justify-end" onMouseEnter={() => setHover(i)} onClick={() => setHover(i)}>
-                      <div className={`w-full rounded-t-md transition-colors ${hover === i ? 'bg-[#7A4E30]' : x.revenue ? 'bg-gradient-to-t from-[#A8824C] to-[#E5B56D]' : 'bg-[#F3ECE1]'}`}
-                        style={{ height: x.revenue ? `${Math.max(4, (x.revenue / maxDay) * 100)}%` : '4px' }} />
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-2 flex justify-between text-[10px] text-neutral-400">
-                  <span>{new Date(d.daily[0].date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</span><span>Today</span>
-                </div>
+                {!d.topWishlisted?.length ? (
+                  <p className="mt-10 mb-8 text-center text-sm text-neutral-500">No wishlist hearts yet. When shoppers tap ♥ on a product, it will show up here.</p>
+                ) : (
+                  <ul className="mt-4 space-y-3">
+                    {d.topWishlisted.map(p => (
+                      <li key={p.id}>
+                        <Link to={`/product/${p.slug}`} className="flex items-center gap-3 rounded-xl p-1 hover:bg-neutral-50">
+                          {p.image ? <img src={imgUrl(p.image, 160)} alt="" className="h-11 w-11 rounded-lg bg-neutral-50 object-cover" loading="lazy" /> : <span className="h-11 w-11 rounded-lg bg-neutral-100" />}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex justify-between gap-2 text-sm">
+                              <span className="truncate text-neutral-900">{p.name}</span>
+                              <span className="shrink-0 font-semibold tabular-nums text-rose-600">♥ {p.count}</span>
+                            </div>
+                            <div className="mt-1 h-1.5 rounded-full bg-neutral-100"><div className="h-full rounded-full bg-gradient-to-r from-rose-300 to-rose-500" style={{ width: `${(p.count / maxWish) * 100}%` }} /></div>
+                            <p className="mt-1 text-[11px] text-neutral-400">{formatPrice(p.price)} · {p.sold} sold{p.count > p.sold * 2 ? ' · high interest, low sales — try a discount' : ''}</p>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </section>
 
               {/* Order status */}

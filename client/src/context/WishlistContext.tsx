@@ -11,6 +11,15 @@ interface WishlistContextType {
 // Stable key even for products without `id` (e.g. older MongoDB data)
 const keyOf = (p: Partial<Product> & { _id?: string }) => String(p.id || p._id || p.slug || '');
 
+// Tell the store a heart was added/removed so the admin can see demand (fire-and-forget)
+const ping = (id: string, on: boolean) => {
+  try {
+    fetch(`/api/products/${encodeURIComponent(id)}/wishlist`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ on }), keepalive: true,
+    }).catch(() => {});
+  } catch { /* ignore */ }
+};
+
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -30,8 +39,9 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [wishlist]);
 
   const toggleWishlist = (product: Product) => {
+    const k = keyOf(product);
+    if (k) ping(k, !wishlist.some(p => keyOf(p) === k));
     setWishlist(prev => {
-      const k = keyOf(product);
       if (!k) return prev;
       const exists = prev.some(p => keyOf(p) === k);
       if (exists) {

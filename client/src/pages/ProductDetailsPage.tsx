@@ -541,20 +541,19 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
           </div>
 
           {activeTab === 'specs' && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 font-tech">
-              {[
-                { label: 'Weight', value: product.specs.weight },
-                { label: 'Cushioning', value: product.specs.cushioning },
-                { label: 'Heel Drop', value: product.specs.heelDrop },
-                { label: 'Upper Material', value: product.specs.upperMaterial },
-                { label: 'Outsole', value: product.specs.soleMaterial },
-                { label: 'Fit', value: product.specs.fit },
-              ].map(({ label, value }) => (
-                <div key={label} className="border border-neutral-200 bg-neutral-50/50 p-4">
-                  <span className="text-[9px] uppercase tracking-widest text-neutral-400 block">{label}</span>
-                  <p className="mt-1.5 text-xs sm:text-sm font-bold text-neutral-900 leading-tight">{value}</p>
-                </div>
-              ))}
+            <div className="max-w-3xl space-y-4 font-sans">
+              {product.tagline && (
+                <p className="text-base sm:text-lg font-medium text-neutral-900">
+                  {product.tagline}
+                </p>
+              )}
+              {product.description ? (
+                <p className="text-sm sm:text-base leading-relaxed text-neutral-600 whitespace-pre-line">
+                  {product.description}
+                </p>
+              ) : (
+                <p className="text-sm text-neutral-400 italic">No description provided for this product.</p>
+              )}
             </div>
           )}
 

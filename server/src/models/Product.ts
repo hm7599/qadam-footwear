@@ -32,6 +32,7 @@ export interface IProduct extends Document {
   model3DUrl?: string;
   rating: number;
   reviewCount: number;
+  wishlistCount?: number;
   isNewArrival: boolean;
   isBestSeller: boolean;
   isTrending: boolean;
@@ -94,6 +95,8 @@ const ProductSchema: Schema = new Schema(
     model3DUrl: { type: String },
     rating: { type: Number, default: 4.8 },
     reviewCount: { type: Number, default: 0 },
+    // How many shoppers currently have this in their wishlist (+1 on heart, -1 on un-heart)
+    wishlistCount: { type: Number, default: 0 },
     isNewArrival: { type: Boolean, default: false },
     isBestSeller: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
