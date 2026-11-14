@@ -90,7 +90,7 @@ const RIGHT_NAV_ITEMS = [
 ];
 
 const TOP_TICKER_ITEMS = [
-  { icon: Shield, text: 'Free Shipping on Orders Above PKR 3,000', gold: true },
+  { icon: Shield, text: 'Free Shipping on Orders Above PKR 5,000', gold: true },
   { icon: Truck, text: 'Easy Returns' },
   { icon: ShieldCheck, text: 'Cash on Delivery Available Across Pakistan' },
   { icon: Leaf, text: 'Handmade in 100% Genuine Leather' },

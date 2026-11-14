@@ -153,8 +153,8 @@ export interface ShippingSettings {
 
 export const DEFAULT_SHIPPING: ShippingSettings = {
   enabled: true,
-  thresholdRs: 84000,       // matches the old hard-coded 300 base units
-  standardFeeRs: 7000,      // old 25 base units
+  thresholdRs: 5000,
+  standardFeeRs: 250,
   expressFeeRs: 4200,       // old 15 base units (express fee)
   eligibleCategories: [],
   eligibleProducts: [],
