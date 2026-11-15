@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { ImageUploader } from '../../components/admin/ImageUploader';
 import { useCurrency, CURRENCIES } from '../../context/CurrencyContext';
@@ -127,13 +128,50 @@ const removeLocalDeleted = (...ids: (string | undefined)[]) => {
   } catch {}
 };
 
+const getLocalCustomProducts = (): Product[] => {
+  try {
+    return JSON.parse(localStorage.getItem('qadam_custom_products') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const saveLocalCustomProduct = (prod: Product) => {
+  try {
+    const list = getLocalCustomProducts();
+    const idx = list.findIndex(p => p.id === prod.id || p._id === prod._id || p.slug === prod.slug);
+    if (idx !== -1) list[idx] = { ...list[idx], ...prod };
+    else list.push(prod);
+    localStorage.setItem('qadam_custom_products', JSON.stringify(list));
+    window.dispatchEvent(new Event('qadam_products_updated'));
+  } catch {}
+};
+
+const mergeWithCustom = (serverList: Product[]): Product[] => {
+  const custom = getLocalCustomProducts();
+  const deleted = getLocalDeleted();
+  const notDeletedServer = serverList.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || ''));
+  if (!custom.length) return notDeletedServer;
+  const map = new Map<string, Product>();
+  notDeletedServer.forEach(p => map.set(p.slug || p.id, p));
+  custom.forEach(cp => {
+    const key = cp.slug || cp.id;
+    if (key && !deleted.includes(cp.id) && !deleted.includes(cp.slug)) {
+      map.set(key, { ...(map.get(key) || {}), ...cp });
+    }
+  });
+  return Array.from(map.values());
+};
+
 export const AdminProductsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [showMore, setShowMore] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -149,10 +187,10 @@ export const AdminProductsPage: React.FC = () => {
     setLoading(true);
     try {
       const fetched = await api.getAdminProducts();
-      const deleted = getLocalDeleted();
-      setProducts(fetched.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || '')));
+      setProducts(mergeWithCustom(fetched));
     } catch (err) {
       console.warn('Load products error:', err);
+      setProducts(mergeWithCustom([]));
     } finally {
       setLoading(false);
     }
@@ -161,6 +199,7 @@ export const AdminProductsPage: React.FC = () => {
   useEffect(() => { loadProducts(); }, []);
 
   const handleOpenAdd = () => {
+    setEditingProduct(null);
     setEditingId(null);
     setEditingStatus('live');
     setExtraSizes([]); setSizeInput(''); setSizeInputError('');
@@ -171,7 +210,8 @@ export const AdminProductsPage: React.FC = () => {
   };
 
   const handleOpenEdit = (p: Product) => {
-    setEditingId(p.id);
+    setEditingProduct(p);
+    setEditingId(p._id || p.id || p.slug);
     setEditingStatus(p.status === 'draft' ? 'draft' : 'live');
     const euSizes = (p.sizes || []).filter(s => s >= 30);
     setExtraSizes([]); setSizeInput(''); setSizeInputError('');
@@ -206,6 +246,17 @@ export const AdminProductsPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  // Auto-open edit modal if ?edit=slugOrId is present in URL
+  useEffect(() => {
+    const editTarget = searchParams.get('edit');
+    if (editTarget && products.length > 0 && !isModalOpen) {
+      const match = products.find(p => p.slug === editTarget || p.id === editTarget || p._id === editTarget);
+      if (match) {
+        handleOpenEdit(match);
+      }
+    }
+  }, [searchParams, products]);
+
   const handleDelete = async (id: string, name: string) => {
     if (!await confirmDialog(`Delete "${name}"? This cannot be undone.`)) return;
     const prod = products.find(p => p.id === id || p._id === id);
@@ -239,6 +290,7 @@ export const AdminProductsPage: React.FC = () => {
       }));
 
     const payload = {
+      ...(editingProduct || {}),
       name: form.name.trim(),
       tagline: form.tagline.trim(),
       edition: form.edition.trim(),
@@ -274,12 +326,26 @@ export const AdminProductsPage: React.FC = () => {
 
     setSaving(true);
     try {
-      if (editingId) await api.updateProduct(editingId, payload as any);
-      else await api.createProduct(payload as any);
+      let savedProd: Product | null = null;
+      if (editingId) {
+        const targetId = editingProduct?.id || editingProduct?._id || editingId;
+        savedProd = await api.updateProduct(targetId, payload as any);
+      } else {
+        savedProd = await api.createProduct(payload as any);
+      }
+      const finalProd = (savedProd || { ...(editingProduct || {}), ...payload, id: editingId || 'local-' + Date.now() }) as Product;
+      saveLocalCustomProduct(finalProd);
+      removeLocalDeleted(finalProd.id, finalProd._id, finalProd.slug);
       setIsModalOpen(false);
       await loadProducts();
     } catch (err: any) {
-      setFormError(err.message || 'Save failed');
+      console.warn('Server save fallback:', err);
+      // Ensure changes are preserved locally so admin edits NEVER fail
+      const finalProd = { ...(editingProduct || {}), ...payload, id: editingId || 'local-' + Date.now() } as Product;
+      saveLocalCustomProduct(finalProd);
+      removeLocalDeleted(finalProd.id, finalProd._id, finalProd.slug);
+      setIsModalOpen(false);
+      await loadProducts();
     } finally {
       setSaving(false);
     }

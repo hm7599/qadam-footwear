@@ -256,17 +256,39 @@ export const DataStore = {
   async updateProduct(id: string, updates: any) {
     // Counter is owned by the wishlist endpoint; never overwrite it from a stale admin form
     if (updates) { updates = { ...updates }; delete updates.wishlistCount; }
+
+    const alt = /^aura-/i.test(id)
+      ? id.replace(/^aura-/i, 'qadam-')
+      : /^qadam-/i.test(id)
+        ? id.replace(/^qadam-/i, 'aura-')
+        : '';
+    const cleanId = id.replace(/^(prod-aura-|prod-qadam-|prod-)/i, '');
+    const candidates = Array.from(new Set([id, alt, cleanId, `qadam-${cleanId}`, `prod-aura-${cleanId}`].filter(Boolean)));
+    if (updates?.slug) candidates.push(updates.slug);
+    if (updates?.id) candidates.push(updates.id);
+
     if (isMongoConnected) {
       try {
+        const or: any[] = [
+          { slug: { $in: candidates } },
+          { id: { $in: candidates } }
+        ];
+        if (/^[0-9a-fA-F]{24}$/.test(id)) {
+          or.push({ _id: id });
+        }
+        if (updates?._id && /^[0-9a-fA-F]{24}$/.test(updates._id)) {
+          or.push({ _id: updates._id });
+        }
+
         const updated = await Product.findOneAndUpdate(
-          { $or: [{ _id: id }, { id }, { slug: id }] },
+          { $or: or },
           { $set: updates },
           { new: true }
         );
         if (updated) {
           const plain = updated.toObject ? updated.toObject() : updated;
-          const idx = memoryProducts.findIndex(p => p.id === id || p._id === id || p.slug === id);
-          if (idx !== -1) memoryProducts[idx] = plain;
+          const idx = memoryProducts.findIndex(p => candidates.includes(p.id) || candidates.includes(p.slug) || (p._id && String(p._id) === id));
+          if (idx !== -1) memoryProducts[idx] = { ...memoryProducts[idx], ...plain };
           else memoryProducts.unshift(plain);
           persistJsonArray(PRODUCTS_FILE, memoryProducts);
           return updated;
@@ -275,7 +297,7 @@ export const DataStore = {
         console.warn('Mongo updateProduct fallback:', e);
       }
     }
-    const index = memoryProducts.findIndex(p => p.id === id || p._id === id || p.slug === id);
+    const index = memoryProducts.findIndex(p => candidates.includes(p.id) || candidates.includes(p.slug) || (p._id && String(p._id) === id));
     if (index !== -1) {
       memoryProducts[index] = { ...memoryProducts[index], ...updates, updatedAt: new Date().toISOString() };
       persistJsonArray(PRODUCTS_FILE, memoryProducts);

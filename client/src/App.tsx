@@ -182,26 +182,55 @@ const getLocalDeletedIds = (): string[] => {
   }
 };
 
-const filterNotDeleted = (list: Product[]): Product[] => {
+const getLocalCustomProducts = (): Product[] => {
+  try {
+    return JSON.parse(localStorage.getItem('qadam_custom_products') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const applyLocalChanges = (list: Product[]): Product[] => {
   const deleted = getLocalDeletedIds();
-  if (!deleted.length) return list;
-  return list.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || ''));
+  const notDeleted = list.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || ''));
+  const custom = getLocalCustomProducts();
+  if (!custom.length) return notDeleted;
+
+  const map = new Map<string, Product>();
+  notDeleted.forEach(p => map.set(p.slug || p.id, p));
+  custom.forEach(cp => {
+    const key = cp.slug || cp.id;
+    if (key && !deleted.includes(cp.id) && !deleted.includes(cp.slug)) {
+      map.set(key, { ...(map.get(key) || {}), ...cp });
+    }
+  });
+  return Array.from(map.values());
 };
 
 export default function App() {
-  const [products, setProducts] = useState<Product[]>(() => filterNotDeleted(INITIAL_PRODUCTS));
+  const [products, setProducts] = useState<Product[]>(() => applyLocalChanges(INITIAL_PRODUCTS));
+
+  const loadInitialProducts = React.useCallback(async () => {
+    try {
+      const list = await api.getProducts();
+      setProducts(applyLocalChanges(list));
+    } catch (err) {
+      console.warn('Failed to fetch initial products:', err);
+      setProducts(applyLocalChanges(INITIAL_PRODUCTS));
+    }
+  }, []);
 
   useEffect(() => {
-    async function loadInitialProducts() {
-      try {
-        const list = await api.getProducts();
-        setProducts(filterNotDeleted(list));
-      } catch (err) {
-        console.warn('Failed to fetch initial products:', err);
-      }
-    }
     loadInitialProducts();
-  }, []);
+  }, [loadInitialProducts]);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      loadInitialProducts();
+    };
+    window.addEventListener('qadam_products_updated', handleUpdate);
+    return () => window.removeEventListener('qadam_products_updated', handleUpdate);
+  }, [loadInitialProducts]);
 
   return (
     <MotionConfig reducedMotion="user">
