@@ -751,13 +751,13 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               <div>
                 <div className="flex items-center gap-2 font-tech text-[10px] sm:text-[11px] uppercase tracking-[0.26em] text-[#C9A46A] font-bold">
                   <Sparkles className="h-3 w-3 text-[#C9A46A]" />
-                  <span>QADAM Cordwainer Guarantee</span>
+                  <span>QADAM Quality Guarantee</span>
                 </div>
                 <h3 className="mt-1 font-serif text-xl sm:text-2xl lg:text-3xl font-normal tracking-tight text-white leading-tight">
-                  100% Genuine Italian Box Calfskin & Cordwainer Guarantee
+                  100% Pure Genuine Leather & Handcrafted Guarantee
                 </h3>
                 <p className="mt-2 font-sans text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-2xl">
-                  Every pair undergoes 14 inspection checkpoints with complimentary size exchange and Cash on Delivery across Pakistan.
+                  Every pair is handmade and checked for quality, with free size exchange and Cash on Delivery all across Pakistan.
                 </p>
               </div>
             </div>
@@ -773,7 +773,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               </Link>
               <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-neutral-400 flex items-center gap-1.5 self-center lg:self-end">
                 <CheckCircle2 className="h-3 w-3 text-[#C9A46A]" />
-                Direct From Master Cordwainers
+                Direct From Master Shoemakers
               </span>
             </div>
           </div>
@@ -785,8 +785,8 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Italian Box Calf</p>
-                <p className="font-sans text-[10px] text-neutral-400 truncate">100% Full-Grain Hide</p>
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Pure Real Leather</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">100% Genuine Leather</p>
               </div>
             </div>
 
@@ -795,8 +795,8 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 <Award className="h-4 w-4" />
               </div>
               <div className="min-w-0">
-                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">14 Quality Checks</p>
-                <p className="font-sans text-[10px] text-neutral-400 truncate">Cordwainer Inspected</p>
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Quality Checked</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">Inspected by Hand</p>
               </div>
             </div>
 
@@ -806,7 +806,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               </div>
               <div className="min-w-0">
                 <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Free Size Exchange</p>
-                <p className="font-sans text-[10px] text-neutral-400 truncate">Doorstep Fit Guarantee</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">Easy Doorstep Swap</p>
               </div>
             </div>
 
@@ -816,7 +816,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               </div>
               <div className="min-w-0">
                 <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Cash on Delivery</p>
-                <p className="font-sans text-[10px] text-neutral-400 truncate">Nationwide Pakistan</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">All Over Pakistan</p>
               </div>
             </div>
           </div>
