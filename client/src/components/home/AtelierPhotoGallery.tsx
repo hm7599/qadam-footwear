@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Grid, Layers } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
 import { isSoldOut } from '../shop/AlertForms';
@@ -174,7 +174,7 @@ export const ATELIER_PHOTOS: AtelierPhoto[] = [
     image: '/images/atelier/formal_horsebit_set5_2.jpg',
     edition: 'QADAM Sartoriale',
     priceRs: 105000,
-    slug: 'qadam-sovereign-venetian-loafer',
+    slug: 'qadam-horsebit-loafer',
     specs: {
       hide: 'Full-Grain Box Calfskin',
       construction: 'Goodyear Welted Beveled Sole',
@@ -191,7 +191,7 @@ export const ATELIER_PHOTOS: AtelierPhoto[] = [
     image: '/images/atelier/formal_boot_set2_3.jpg',
     edition: 'Winter Atelier',
     priceRs: 117600,
-    slug: 'qadam-tuscan-chelsea-sovereign',
+    slug: 'qadam-noir-chelsea',
     specs: {
       hide: 'Aniline Black Calfskin',
       construction: 'Goodyear Welted Dainite Rubber Sole',
@@ -208,7 +208,7 @@ export const ATELIER_PHOTOS: AtelierPhoto[] = [
     image: '/images/atelier/formal_prestige_set6_2.jpg',
     edition: 'Cordwainer Series',
     priceRs: 107800,
-    slug: 'qadam-florentine-double-monkstrap',
+    slug: 'qadam-single-monk',
     specs: {
       hide: 'Fine-Grained Obsidian Calfskin',
       construction: 'Goodyear Welted Oak-Bark Leather Sole',
@@ -247,6 +247,7 @@ export interface AtelierGalleryItem {
   originalPrice?: number;
   slug: string;
   product: Product;
+  isAtelierFeatured?: boolean;
   specs: {
     hide: string;
     construction: string;
@@ -266,13 +267,15 @@ const CATEGORIES = [
 
 export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ products = INITIAL_PRODUCTS }) => {
   const [selectedCat, setSelectedCat] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<'paged' | 'all'>('paged');
-  const [isShuffling, setIsShuffling] = useState<boolean>(false);
-  const [shuffledList, setShuffledList] = useState<AtelierGalleryItem[] | null>(null);
   const [activeItem, setActiveItem] = useState<AtelierGalleryItem | null>(null);
   const [selectedSize, setSelectedSize] = useState<number>(9);
   const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
+  const [shuffleCount, setShuffleCount] = useState<number>(0);
+  const [isShuffling, setIsShuffling] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(0);
+  const [viewAll, setViewAll] = useState<boolean>(false);
+
+  const ITEMS_PER_PAGE = 8;
 
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
@@ -333,6 +336,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
         originalPrice: targetProd.price,
         slug: targetProd.slug || photo.slug,
         product: targetProd,
+        isAtelierFeatured: !!targetProd.isAtelierFeatured,
         specs: {
           hide: targetProd.specs?.upperMaterial || photo.specs.hide,
           construction: targetProd.specs?.soleMaterial || photo.specs.construction,
@@ -382,6 +386,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           originalPrice: p.price,
           slug: p.slug,
           product: p,
+          isAtelierFeatured: !!p.isAtelierFeatured,
           specs: {
             hide: p.specs?.upperMaterial || 'Full-Grain Box Calfskin',
             construction: p.specs?.soleMaterial || 'Goodyear Welt Sole',
@@ -392,61 +397,48 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
       });
 
     const combined = [...mapped, ...extras];
-
-    // Priority sorting:
-    // 1. If sortOrder is explicitly defined (> 0), sort in ascending order (1, 2, 3...)
-    // 2. If isFeatured is true, place them ahead of non-featured
-    // 3. Otherwise preserve original order
-    combined.sort((a, b) => {
-      const orderA = a.product?.sortOrder && a.product.sortOrder > 0 ? a.product.sortOrder : null;
-      const orderB = b.product?.sortOrder && b.product.sortOrder > 0 ? b.product.sortOrder : null;
-
-      if (orderA !== null && orderB !== null) return orderA - orderB;
-      if (orderA !== null && orderB === null) return -1;
-      if (orderA === null && orderB !== null) return 1;
-
-      const featA = a.product?.isFeatured ? 1 : 0;
-      const featB = b.product?.isFeatured ? 1 : 0;
-      if (featA !== featB) return featB - featA;
-
-      return 0;
+    // Prioritize products marked as Atelier Featured in admin panel
+    return combined.sort((a, b) => {
+      const aFeat = a.isAtelierFeatured ? 1 : 0;
+      const bFeat = b.isAtelierFeatured ? 1 : 0;
+      return bFeat - aFeat;
     });
-
-    return combined;
   }, [liveProducts]);
 
-  const baseFiltered = React.useMemo(() => {
-    if (selectedCat === 'all') return galleryItems;
-    return galleryItems.filter(p => {
-      if (selectedCat === 'sandal') return p.category === 'sandal' || p.category === 'slide';
-      return p.category === selectedCat;
-    });
-  }, [selectedCat, galleryItems]);
+  const filteredBase = React.useMemo(() => {
+    return selectedCat === 'all'
+      ? galleryItems
+      : galleryItems.filter(p => {
+          if (selectedCat === 'sandal') return p.category === 'sandal' || p.category === 'slide';
+          return p.category === selectedCat;
+        });
+  }, [galleryItems, selectedCat]);
 
-  const activeList = shuffledList || baseFiltered;
+  // When shuffle is triggered, re-order the displayed list
+  const displayItems = React.useMemo(() => {
+    if (shuffleCount === 0) return filteredBase;
+    const array = [...filteredBase];
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }, [filteredBase, shuffleCount]);
 
-  const PAGE_SIZE = 4;
-  const totalPages = Math.max(1, Math.ceil(activeList.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(displayItems.length / ITEMS_PER_PAGE));
+  const currentItems = viewAll
+    ? displayItems
+    : displayItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
 
-  const displayedItems = viewMode === 'paged'
-    ? activeList.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE)
-    : activeList;
+  useEffect(() => {
+    setPage(0);
+  }, [selectedCat]);
 
   const handleShuffle = () => {
     setIsShuffling(true);
-    const arr = [...baseFiltered];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    setShuffledList(arr);
-    setCurrentPage(0);
+    setShuffleCount(c => c + 1);
+    setPage(0);
     setTimeout(() => setIsShuffling(false), 450);
-  };
-
-  const handleResetOrder = () => {
-    setShuffledList(null);
-    setCurrentPage(0);
   };
 
   const product = activeItem ? activeItem.product : null;
@@ -482,7 +474,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   };
 
   return (
-    <section className="bg-white py-20 sm:py-28 border-b border-neutral-200 overflow-hidden">
+    <section id="atelier-gallery" className="bg-white py-20 sm:py-28 border-b border-neutral-200 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* ── SECTION HEADER ── */}
@@ -502,111 +494,76 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
             Every pair is sculpted on anatomical lasts, hand-burnished with natural carnauba wax, and reinforced with a 360° Goodyear-welted leather sole.
           </p>
 
-          {/* Category Filter Pills */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 font-tech">
-            {CATEGORIES.map(cat => (
+          {/* Controls Row: Category Filter Pills + Shuffle & View Toggle & Pagination */}
+          <div className="mt-8 w-full flex flex-col lg:flex-row items-center justify-between gap-4">
+            {/* Category Filter Pills */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 font-tech">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCat(cat.id)}
+                  className={`px-4 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full transition-all cursor-pointer ${
+                    selectedCat === cat.id
+                      ? 'bg-neutral-950 text-white shadow-xs'
+                      : 'bg-white text-neutral-600 hover:text-black border border-neutral-200 hover:border-neutral-400'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Actions: Shuffle & Carousel Pagination / View All */}
+            <div className="flex flex-wrap items-center justify-center gap-2 font-tech">
+              {/* Shuffle Button */}
               <button
-                key={cat.id}
-                onClick={() => {
-                  setSelectedCat(cat.id);
-                  setCurrentPage(0);
-                  setShuffledList(null);
-                }}
-                className={`px-5 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full transition-all cursor-pointer ${
-                  selectedCat === cat.id
-                    ? 'bg-neutral-950 text-white shadow-xs'
-                    : 'bg-white text-neutral-600 hover:text-black border border-neutral-200 hover:border-neutral-400'
-                }`}
+                onClick={handleShuffle}
+                title="Shuffle products showcase"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full border border-neutral-200 bg-white text-neutral-700 hover:text-black hover:border-neutral-400 hover:bg-neutral-50 transition-all cursor-pointer shadow-2xs active:scale-95"
               >
-                {cat.label}
+                <Shuffle className={`h-3 w-3 text-[#9A7B4F] ${isShuffling ? 'animate-spin' : ''}`} />
+                <span>Shuffle</span>
               </button>
-            ))}
-          </div>
-        </div>
 
-        {/* ── CONTROLS TOOLBAR: Shuffle, View Mode, Pagination ── */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-neutral-100 pb-4">
-          {/* Left: Showing count & Shuffled status */}
-          <div className="flex items-center gap-2.5 font-tech text-xs text-neutral-500">
-            <span>
-              {viewMode === 'paged' && activeList.length > PAGE_SIZE
-                ? `Showing ${activeList.length > 0 ? currentPage * PAGE_SIZE + 1 : 0}–${Math.min((currentPage + 1) * PAGE_SIZE, activeList.length)} of ${activeList.length} pairs`
-                : `Showing all ${activeList.length} pairs`}
-            </span>
-            {shuffledList && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
-                <Sparkles className="h-3 w-3 text-[#9A7B4F]" /> Shuffled
+              {/* View All / Paginated Toggle */}
+              {displayItems.length > ITEMS_PER_PAGE && (
                 <button
-                  type="button"
-                  onClick={handleResetOrder}
-                  className="ml-1 text-neutral-600 hover:text-black underline cursor-pointer"
+                  onClick={() => setViewAll(!viewAll)}
+                  className={`px-3.5 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full border transition-all cursor-pointer ${
+                    viewAll
+                      ? 'bg-neutral-900 text-white border-neutral-900'
+                      : 'bg-white text-neutral-700 hover:text-black border-neutral-200 hover:border-neutral-400'
+                  }`}
                 >
-                  Reset
+                  {viewAll ? 'Show Paginated' : `View All (${displayItems.length})`}
                 </button>
-              </span>
-            )}
-          </div>
+              )}
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Shuffle Button */}
-            <button
-              type="button"
-              onClick={handleShuffle}
-              title="Shuffle pairs to discover random shoes"
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[10.5px] font-tech font-bold uppercase tracking-wider text-neutral-700 bg-neutral-100 hover:bg-neutral-200 hover:text-black border border-neutral-200 transition cursor-pointer"
-            >
-              <Shuffle className={`h-3 w-3 ${isShuffling ? 'animate-spin' : ''}`} />
-              <span>Shuffle Pairs</span>
-            </button>
-
-            {/* View Mode Toggle (only when more than 4 items) */}
-            {activeList.length > PAGE_SIZE && (
-              <button
-                type="button"
-                onClick={() => setViewMode(prev => prev === 'paged' ? 'all' : 'paged')}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10.5px] font-tech font-bold uppercase tracking-wider text-neutral-600 border border-neutral-200 hover:border-neutral-400 hover:text-black transition cursor-pointer"
-              >
-                {viewMode === 'paged' ? (
-                  <>
-                    <Grid className="h-3 w-3" />
-                    <span>View All ({activeList.length})</span>
-                  </>
-                ) : (
-                  <>
-                    <Layers className="h-3 w-3" />
-                    <span>4 Per Slide</span>
-                  </>
-                )}
-              </button>
-            )}
-
-            {/* Paging Prev / Next (when in paged mode and totalPages > 1) */}
-            {viewMode === 'paged' && totalPages > 1 && (
-              <div className="flex items-center gap-1.5 pl-1 sm:border-l sm:border-neutral-200 sm:pl-3">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-                  disabled={currentPage === 0}
-                  aria-label="Previous page"
-                  className="h-7 w-7 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-700 hover:bg-black hover:text-white hover:border-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
-                <span className="font-tech text-xs font-bold text-neutral-600 px-1.5">
-                  {currentPage + 1}/{totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage(p => Math.min(totalPages - 1, p + 1))}
-                  disabled={currentPage >= totalPages - 1}
-                  aria-label="Next page"
-                  className="h-7 w-7 rounded-full border border-neutral-200 flex items-center justify-center text-neutral-700 hover:bg-black hover:text-white hover:border-black disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
+              {/* Prev / Next Page Buttons (when not View All and more than 1 page) */}
+              {!viewAll && totalPages > 1 && (
+                <div className="flex items-center gap-1 ml-1 bg-neutral-100 p-1 rounded-full border border-neutral-200">
+                  <button
+                    onClick={() => setPage(p => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                    aria-label="Previous page"
+                    className="p-1.5 rounded-full hover:bg-white text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="text-[10px] font-bold text-neutral-600 px-2 select-none tracking-widest">
+                    {page + 1}/{totalPages}
+                  </span>
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                    disabled={page >= totalPages - 1}
+                    aria-label="Next page"
+                    className="p-1.5 rounded-full hover:bg-white text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -616,9 +573,9 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
         >
           <AnimatePresence mode="popLayout">
-            {displayedItems.map((item, idx) => (
+            {currentItems.map((item, idx) => (
               <motion.div
-                key={`${item.id}-${currentPage}-${shuffledList ? 'shuf' : 'ord'}`}
+                key={item.id}
                 layout
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -647,10 +604,16 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   </div>
 
                   {/* Top-Left Edition Tag */}
-                  <div className="absolute top-3 left-3 z-10">
+                  <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 flex-wrap max-w-[80%]">
                     <span className="font-tech text-[8px] uppercase tracking-wider text-neutral-600 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs border border-neutral-200">
                       {item.edition}
                     </span>
+                    {item.isAtelierFeatured && (
+                      <span className="font-tech text-[8px] uppercase tracking-wider text-[#9A7B4F] font-bold bg-amber-50/95 px-1.5 py-0.5 rounded shadow-2xs border border-amber-200 flex items-center gap-0.5">
+                        <Sparkles className="h-2 w-2 text-[#9A7B4F]" />
+                        Featured
+                      </span>
+                    )}
                   </div>
 
                   {/* Bottom Edition Overlay */}
@@ -699,20 +662,36 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           </AnimatePresence>
         </motion.div>
 
-        {/* Pagination Dots (when in paged mode and totalPages > 1) */}
-        {viewMode === 'paged' && totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-2">
-            {Array.from({ length: totalPages }).map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setCurrentPage(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className={`h-2 transition-all rounded-full cursor-pointer ${
-                  currentPage === i ? 'w-8 bg-neutral-950' : 'w-2 bg-neutral-300 hover:bg-neutral-500'
-                }`}
-              />
-            ))}
+        {/* ── BOTTOM CAROUSEL / PAGINATION NAVIGATION ── */}
+        {!viewAll && totalPages > 1 && (
+          <div className="mt-8 flex items-center justify-center gap-3 font-tech">
+            <button
+              onClick={() => {
+                setPage(p => Math.max(0, p - 1));
+                const el = document.getElementById('atelier-gallery');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              disabled={page === 0}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-[10.5px] uppercase tracking-wider font-bold rounded-full border border-neutral-300 bg-white text-neutral-700 hover:text-black hover:border-black disabled:opacity-30 disabled:hover:border-neutral-300 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Previous
+            </button>
+            <span className="text-[11px] font-bold text-neutral-600 tracking-widest px-2">
+              PAGE {page + 1} OF {totalPages}
+            </span>
+            <button
+              onClick={() => {
+                setPage(p => Math.min(totalPages - 1, p + 1));
+                const el = document.getElementById('atelier-gallery');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              disabled={page >= totalPages - 1}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-[10.5px] uppercase tracking-wider font-bold rounded-full border border-neutral-300 bg-white text-neutral-700 hover:text-black hover:border-black disabled:opacity-30 disabled:hover:border-neutral-300 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+            >
+              Next
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
 

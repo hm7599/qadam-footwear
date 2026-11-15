@@ -51,8 +51,7 @@ export interface Product {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
-  isFeatured?: boolean;
-  sortOrder?: number;
+  isAtelierFeatured?: boolean;
   edition?: string;
   reviews: ReviewItem[];
   createdAt?: string;
@@ -187,8 +186,6 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
-    "isFeatured": true,
-    "sortOrder": 1,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.438Z"
   },
@@ -245,8 +242,6 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
-    "isFeatured": true,
-    "sortOrder": 2,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.439Z"
   },
@@ -303,8 +298,6 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
-    "isFeatured": true,
-    "sortOrder": 3,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.440Z"
   },
@@ -531,8 +524,6 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
-    "isFeatured": true,
-    "sortOrder": 4,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.444Z"
   },
@@ -590,7 +581,137 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
+    "isAtelierFeatured": true,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.445Z"
+  },
+  {
+    "_id": "prod-aura-horsebit-loafer",
+    "id": "prod-aura-horsebit-loafer",
+    "name": "QADAM Horsebit Loafer",
+    "slug": "qadam-horsebit-loafer",
+    "tagline": "Champagne Gold Horsebit Hardware",
+    "brand": "QADAM",
+    "price": 375,
+    "category": "formals",
+    "gender": "men",
+    "description": "Distinguished slip-on loafer tailored from hand-burnished calfskin leather. Accented with custom champagne gold horsebit hardware and a beveled Goodyear-welted leather sole.",
+    "specs": {
+      "weight": "350g (Size 9 US)",
+      "cushioning": "Arch Support Leather Insole",
+      "upperMaterial": "Textured Box Calfskin",
+      "soleMaterial": "Goodyear Welted Beveled Sole",
+      "heelDrop": "2.2 cm stacked heel",
+      "fit": "True to size (Elegante Loafer Last)"
+    },
+    "colors": [
+      {
+        "name": "Amber Noir",
+        "hex": "#3A241A",
+        "previewImage": "/images/atelier/formal_horsebit_set5_2.jpg",
+        "modelTint": "#3A241A"
+      }
+    ],
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "stock": 18,
+    "images": [
+      "/images/atelier/formal_horsebit_set5_2.jpg"
+    ],
+    "rating": 4.96,
+    "reviewCount": 42,
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "isTrending": true,
+    "isLimitedEdition": false,
+    "isAtelierFeatured": true,
+    "edition": "QADAM Sartoriale",
+    "reviews": [],
+    "createdAt": "2026-11-08T12:00:00.000Z"
+  },
+  {
+    "_id": "prod-aura-noir-chelsea",
+    "id": "prod-aura-noir-chelsea",
+    "name": "QADAM Noir Equestrian Chelsea",
+    "slug": "qadam-noir-chelsea",
+    "tagline": "Black Mirror Polish with Ribbed Gussets",
+    "brand": "QADAM",
+    "price": 420,
+    "category": "chelsea-boots",
+    "gender": "men",
+    "description": "Masterfully crafted from high-shine aniline black calfskin. Features heavy-duty ribbed elastic gussets and a storm-welted Dainite rubber sole for year-round elegance and weather resistance.",
+    "specs": {
+      "weight": "420g (Size 9 US)",
+      "cushioning": "Tempered Steel Shank + Cork Bedding",
+      "upperMaterial": "High-Shine Aniline Calfskin",
+      "soleMaterial": "Goodyear Welted Dainite Rubber Sole",
+      "heelDrop": "2.8 cm stacked heel",
+      "fit": "True to size (Sleek Equestrian Last)"
+    },
+    "colors": [
+      {
+        "name": "Glacé Obsidian",
+        "hex": "#111111",
+        "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
+        "modelTint": "#111111"
+      }
+    ],
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "stock": 15,
+    "images": [
+      "/images/atelier/formal_boot_set2_3.jpg"
+    ],
+    "rating": 4.97,
+    "reviewCount": 38,
+    "isNewArrival": false,
+    "isBestSeller": true,
+    "isTrending": false,
+    "isLimitedEdition": true,
+    "isAtelierFeatured": true,
+    "edition": "Winter Atelier",
+    "reviews": [],
+    "createdAt": "2026-11-08T12:00:00.000Z"
+  },
+  {
+    "_id": "prod-aura-single-monk",
+    "id": "prod-aura-single-monk",
+    "name": "QADAM Florentine Single Monkstrap",
+    "slug": "qadam-single-monk",
+    "tagline": "Palladium Buckle with Beveled Waist",
+    "brand": "QADAM",
+    "price": 385,
+    "category": "formals",
+    "gender": "men",
+    "description": "Sculpted on a classic Florentine chiseled last using glacé obsidian calfskin. Finished with an understated single palladium buckle and an oak-bark tanned leather outsole.",
+    "specs": {
+      "weight": "390g (Size 9 US)",
+      "cushioning": "Breathable Natural Cork Insole",
+      "upperMaterial": "Fine-Grained Obsidian Calfskin",
+      "soleMaterial": "Goodyear Welted Oak-Bark Leather Sole",
+      "heelDrop": "2.4 cm heel",
+      "fit": "True to size (Classic Florentine D-Last)"
+    },
+    "colors": [
+      {
+        "name": "Obsidian Noir",
+        "hex": "#141414",
+        "previewImage": "/images/atelier/formal_prestige_set6_2.jpg",
+        "modelTint": "#141414"
+      }
+    ],
+    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "stock": 12,
+    "images": [
+      "/images/atelier/formal_prestige_set6_2.jpg"
+    ],
+    "rating": 4.95,
+    "reviewCount": 31,
+    "isNewArrival": true,
+    "isBestSeller": false,
+    "isTrending": true,
+    "isLimitedEdition": false,
+    "isAtelierFeatured": true,
+    "edition": "Cordwainer Series",
+    "reviews": [],
+    "createdAt": "2026-11-08T12:00:00.000Z"
   }
 ];
