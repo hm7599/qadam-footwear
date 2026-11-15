@@ -5,6 +5,8 @@ import { useNotification } from '../../context/NotificationContext';
 import { Link } from 'react-router-dom';
 import { imgUrl } from '../../utils/img';
 
+import { Product } from '../../types';
+
 interface TimeLeft {
   days: number;
   hours: number;
@@ -29,7 +31,7 @@ const TimeBox: React.FC<{ value: string; label: string }> = ({ value, label }) =
   </div>
 );
 
-export const DropCountdownSection: React.FC = () => {
+export const DropCountdownSection: React.FC<{ products?: Product[] }> = ({ products = [] }) => {
   const { openPrompt, isSubscribed } = useNotification();
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 2, hours: 14, minutes: 38, seconds: 42 });
 
@@ -46,10 +48,23 @@ export const DropCountdownSection: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const liveList = (products || []).filter(p => p.status !== 'draft');
+  const dropProduct =
+    liveList.find(p => p.isLimitedEdition) ||
+    liveList.find(p => p.slug.includes('wholecut')) ||
+    liveList.find(p => p.slug === 'qadam-phantom-01') ||
+    liveList[0];
+
+  const title = dropProduct ? dropProduct.name : 'The Classic Brown Brogue';
+  const tagline = dropProduct?.tagline || dropProduct?.description || 'Rich brown leather, handmade with fine brogue details. Limited handcrafted pairs.';
+  const image = dropProduct?.images?.[0] || dropProduct?.colors?.[0]?.previewImage || '/images/drop/brown-brogue.png';
+  const slug = dropProduct?.slug || 'qadam-phantom-01';
+  const editionBadge = dropProduct?.edition || 'Limited Edition';
+
   const pad = (n: number) => String(n).padStart(2, '0');
-  const sold = 347;
   const total = 500;
-  const pct = Math.round((sold / total) * 100);
+  const sold = dropProduct?.stock ? Math.max(80, 500 - dropProduct.stock * 8) : 347;
+  const pct = Math.min(95, Math.round((sold / total) * 100));
 
   return (
     <section className="bg-white py-14 sm:py-20">
@@ -71,21 +86,21 @@ export const DropCountdownSection: React.FC = () => {
             >
               <span className="inline-flex items-center gap-2 rounded-full bg-[#3B2414] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#F4EADD]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#E0B07A] animate-pulse" />
-                Limited Edition
+                {editionBadge}
               </span>
 
               <div>
-                <h2 className="font-serif text-4xl sm:text-5xl leading-[1.05] tracking-tight text-[#2A190D]">
-                  The Classic<br />Brown Brogue
+                <h2 className="font-serif text-3xl sm:text-5xl leading-[1.08] tracking-tight text-[#2A190D]">
+                  {title}
                 </h2>
-                <p className="mt-4 max-w-md text-base text-[#6B4F36] leading-relaxed">
-                  Rich brown leather, handmade with fine brogue details. Only 500 pairs will be made.
+                <p className="mt-4 max-w-md text-sm sm:text-base text-[#6B4F36] leading-relaxed">
+                  {tagline}
                 </p>
               </div>
 
               {/* Countdown */}
               <div>
-                <p className="mb-3 text-xs font-semibold text-[#3B2414]">Sale starts in:</p>
+                <p className="mb-3 text-xs font-semibold text-[#3B2414]">Drop countdown begins:</p>
                 <div className="flex items-start gap-2 sm:gap-3">
                   <TimeBox value={pad(timeLeft.days)} label="Days" />
                   <span className="mt-5 sm:mt-6 font-serif text-2xl text-[#C99A6B]">:</span>
@@ -107,7 +122,7 @@ export const DropCountdownSection: React.FC = () => {
                   {isSubscribed ? 'You will be notified' : 'Notify Me'}
                 </button>
                 <Link
-                  to="/product/qadam-phantom-01"
+                  to={`/product/${slug}`}
                   className="group flex h-12 items-center justify-center gap-2 rounded-full bg-white/70 px-7 text-[12px] font-semibold uppercase tracking-wider text-[#3B2414] ring-1 ring-[#D9C4A8] transition-all hover:bg-white"
                 >
                   View Details
@@ -138,14 +153,14 @@ export const DropCountdownSection: React.FC = () => {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="lg:col-span-6 order-1 lg:order-2"
             >
-              <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-3xl shadow-[0_30px_60px_-25px_rgba(90,55,25,0.45)]">
+              <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-3xl shadow-[0_30px_60px_-25px_rgba(90,55,25,0.45)] bg-white/40 flex items-center justify-center p-4">
                 <img
-                  src={imgUrl("/images/drop/brown-brogue.png", 960)} decoding="async" loading="lazy"
-                  alt="Classic Brown Brogue"
-                  className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                  src={imgUrl(image, 960)} decoding="async" loading="lazy"
+                  alt={title}
+                  className="h-full w-full object-contain transition-transform duration-700 hover:scale-105"
                 />
-                <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#3B2414] backdrop-blur">
-                  Only 500 Pairs
+                <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#3B2414] backdrop-blur shadow-2xs">
+                  {editionBadge}
                 </span>
               </div>
             </motion.div>

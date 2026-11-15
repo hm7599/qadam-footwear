@@ -100,7 +100,7 @@ export const HomePage: React.FC<{ products: Product[] }> = ({ products }) => {
       <TrendingSection products={products} />
 
       {/* 6. Limited edition countdown */}
-      <DropCountdownSection />
+      <DropCountdownSection products={products} />
 
       {/* 7. Craft story */}
       <InteractiveShowcase products={products} />

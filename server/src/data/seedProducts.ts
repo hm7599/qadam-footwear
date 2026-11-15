@@ -51,6 +51,8 @@ export interface Product {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
+  isFeatured?: boolean;
+  sortOrder?: number;
   edition?: string;
   reviews: ReviewItem[];
   createdAt?: string;
@@ -185,6 +187,8 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
+    "isFeatured": true,
+    "sortOrder": 1,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.438Z"
   },
@@ -241,6 +245,8 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
+    "isFeatured": true,
+    "sortOrder": 2,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.439Z"
   },
@@ -297,6 +303,8 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
+    "isFeatured": true,
+    "sortOrder": 3,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.440Z"
   },
@@ -523,6 +531,8 @@ export const SEED_PRODUCTS: ProductItem[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
+    "isFeatured": true,
+    "sortOrder": 4,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.444Z"
   },

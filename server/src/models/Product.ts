@@ -37,6 +37,8 @@ export interface IProduct extends Document {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
+  isFeatured?: boolean;
+  sortOrder?: number;
   edition?: string;
   status?: 'draft' | 'live';
   reviews: Array<{
@@ -100,6 +102,8 @@ const ProductSchema: Schema = new Schema(
     isBestSeller: { type: Boolean, default: false },
     isTrending: { type: Boolean, default: false },
     isLimitedEdition: { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false },
+    sortOrder: { type: Number, default: 0 },
     edition: { type: String, default: '' },
     // draft = hidden from the shop until the admin publishes it
     status: { type: String, enum: ['draft', 'live'], default: 'live' },

@@ -23,7 +23,8 @@ type TabId = typeof TABS[number]['id'];
 export const CollectionsSection: React.FC<CollectionsSectionProps> = ({ products }) => {
   const [activeTab, setActiveTab] = useState<TabId>('bestseller');
 
-  const filteredProducts = products.filter(p => {
+  const liveOnly = products.filter(p => p.status !== 'draft');
+  const filteredProducts = liveOnly.filter(p => {
     if (activeTab === 'bestseller') return p.isBestSeller;
     if (activeTab === 'casuals') return p.category === 'casuals';
     if (activeTab === 'formals') return p.category === 'formals' || p.category === 'luxury-minimal';
@@ -33,12 +34,16 @@ export const CollectionsSection: React.FC<CollectionsSectionProps> = ({ products
     return true;
   });
 
-  // Show up to 5 products for a clean 5-column or responsive grid
-  const MAX_ITEMS = 5;
-  const displayProducts = [
-    ...filteredProducts,
-    ...products.filter(p => !filteredProducts.includes(p)),
-  ].slice(0, MAX_ITEMS);
+  // Show up to 10 products for clean 5-column rows
+  const MAX_ITEMS = 10;
+  const displayProducts = (
+    filteredProducts.length >= MAX_ITEMS
+      ? filteredProducts.slice(0, MAX_ITEMS)
+      : [
+          ...filteredProducts,
+          ...liveOnly.filter(p => !filteredProducts.some(f => f.id === p.id)),
+        ].slice(0, MAX_ITEMS)
+  );
 
   return (
     <section className="bg-white py-16 sm:py-20 border-b border-neutral-200 overflow-hidden">

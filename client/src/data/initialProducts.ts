@@ -48,6 +48,8 @@ export interface Product {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
+  isFeatured?: boolean;
+  sortOrder?: number;
   edition?: string;
   status?: 'draft' | 'live';
   reviews: ReviewItem[];
@@ -182,6 +184,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
+    "isFeatured": true,
+    "sortOrder": 1,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.438Z"
   },
@@ -238,6 +242,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
+    "isFeatured": true,
+    "sortOrder": 2,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.439Z"
   },
@@ -294,6 +300,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     "isBestSeller": true,
     "isTrending": true,
     "isLimitedEdition": false,
+    "isFeatured": true,
+    "sortOrder": 3,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.440Z"
   },
@@ -520,6 +528,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     "isBestSeller": true,
     "isTrending": false,
     "isLimitedEdition": true,
+    "isFeatured": true,
+    "sortOrder": 4,
     "reviews": [],
     "createdAt": "2026-11-07T23:10:52.444Z"
   },

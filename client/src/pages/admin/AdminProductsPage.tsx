@@ -44,6 +44,8 @@ interface FormState {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
+  isFeatured: boolean;
+  sortOrder: string;
   // optional extra details
   weight: string;
   upperMaterial: string;
@@ -71,6 +73,8 @@ const EMPTY_FORM: FormState = {
   isBestSeller: false,
   isTrending: false,
   isLimitedEdition: false,
+  isFeatured: false,
+  sortOrder: '0',
   weight: '',
   upperMaterial: '',
   soleMaterial: '',
@@ -166,6 +170,8 @@ export const AdminProductsPage: React.FC = () => {
       isBestSeller: !!p.isBestSeller,
       isTrending: !!p.isTrending,
       isLimitedEdition: !!p.isLimitedEdition,
+      isFeatured: !!p.isFeatured,
+      sortOrder: String(p.sortOrder ?? 0),
       weight: p.specs?.weight || '',
       upperMaterial: p.specs?.upperMaterial || '',
       soleMaterial: p.specs?.soleMaterial || '',
@@ -238,6 +244,8 @@ export const AdminProductsPage: React.FC = () => {
       isBestSeller: form.isBestSeller,
       isTrending: form.isTrending,
       isLimitedEdition: form.isLimitedEdition,
+      isFeatured: form.isFeatured,
+      sortOrder: Math.max(0, parseInt(form.sortOrder, 10) || 0),
     };
 
     setSaving(true);
@@ -456,6 +464,11 @@ export const AdminProductsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1 text-[11px] font-semibold">
+                          {(p.isFeatured || (p.sortOrder && p.sortOrder > 0)) && (
+                            <span className="rounded-full bg-purple-50 px-2 py-0.5 text-purple-800 ring-1 ring-purple-200/70 font-bold">
+                              Showcase{p.sortOrder ? ` #${p.sortOrder}` : ''}
+                            </span>
+                          )}
                           {p.edition && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-900 ring-1 ring-amber-200/70">{p.edition}</span>}
                           {p.isNewArrival && <span className="rounded-full bg-neutral-950 px-2 py-0.5 text-white">New</span>}
                           {p.isBestSeller && <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-neutral-700">Best Seller</span>}
@@ -662,10 +675,24 @@ export const AdminProductsPage: React.FC = () => {
                 <section>
                   <h4 className="mb-2 text-sm font-semibold text-neutral-900">Show this product in</h4>
                   <div className="flex flex-wrap gap-2">
-                    <Toggle label="New Arrivals" checked={form.isNewArrival} onChange={v => set('isNewArrival', v)} />
+                    <Toggle label="Homepage Atelier Showcase (Top Cards)" checked={form.isFeatured} onChange={v => set('isFeatured', v)} />
+                    <Toggle label="Trending Pick (Homepage Spotlight)" checked={form.isTrending} onChange={v => set('isTrending', v)} />
+                    <Toggle label="Limited Edition Drop Countdown" checked={form.isLimitedEdition} onChange={v => set('isLimitedEdition', v)} />
                     <Toggle label="Best Sellers" checked={form.isBestSeller} onChange={v => set('isBestSeller', v)} />
-                    <Toggle label="Trending (Featured Pick on Homepage)" checked={form.isTrending} onChange={v => set('isTrending', v)} />
-                    <Toggle label="Limited Edition" checked={form.isLimitedEdition} onChange={v => set('isLimitedEdition', v)} />
+                    <Toggle label="New Arrivals" checked={form.isNewArrival} onChange={v => set('isNewArrival', v)} />
+                  </div>
+
+                  <div className="mt-3 max-w-xs">
+                    <Field label="Homepage Display Position (Priority)" hint="1 = first shoe, 2 = second, 3 = third, 4 = fourth... (0 = auto)">
+                      <input
+                        type="number"
+                        min="0"
+                        value={form.sortOrder}
+                        onChange={e => set('sortOrder', e.target.value)}
+                        placeholder="1"
+                        className={inputCls}
+                      />
+                    </Field>
                   </div>
                 </section>
 
