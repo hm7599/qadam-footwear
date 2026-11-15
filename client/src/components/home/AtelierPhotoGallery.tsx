@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Edit, Heart, Star } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
 import { isSoldOut } from '../shop/AlertForms';
 import { Product } from '../../types';
@@ -281,6 +282,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
   const { isAdmin } = useAuth();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -587,92 +589,194 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
         >
           <AnimatePresence mode="popLayout">
-            {currentItems.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.35, delay: idx * 0.03 }}
-                className="group relative bg-[#FAF8F5] border border-neutral-200/90 rounded-xl overflow-hidden flex flex-col justify-between hover:border-neutral-400 hover:shadow-xl transition-all duration-300"
-              >
-                {/* Image Canvas with hover zoom */}
-                <div
-                  onClick={() => {
-                    setActiveItem(item);
-                    setSelectedSize(pickDefaultSize(item.product.sizes));
-                  }}
-                  className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-[#FAF8F5] to-[#F2EFEA] cursor-pointer flex items-center justify-center p-4"
+            {currentItems.map((item, idx) => {
+              const inWishlist = isInWishlist(item.product.id || item.id);
+              const hasDiscount = !!(item.originalPrice && item.originalPrice > item.price);
+              const discountPct = hasDiscount ? Math.round((1 - item.price / item.originalPrice!) * 100) : 0;
+              const savings = hasDiscount ? item.originalPrice! - item.price : 0;
+
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.35, delay: idx * 0.03 }}
+                  className="group relative bg-white border border-neutral-200/90 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#C9A46A]/60 hover:shadow-[0_20px_40px_-15px_rgba(59,38,24,0.12)] hover:-translate-y-1 transition-all duration-300"
                 >
-                  <img
-                    src={imgUrl(item.image, 960)} decoding="async"
-                    alt={item.title}
-                    loading="lazy"
-                    className="max-h-[85%] max-w-[85%] object-contain filter drop-shadow-[0_12px_16px_rgba(0,0,0,0.12)] transition-transform duration-700 ease-out group-hover:scale-108"
-                  />
+                  {/* Image Canvas with hover zoom */}
+                  <div
+                    onClick={() => {
+                      setActiveItem(item);
+                      setSelectedSize(pickDefaultSize(item.product.sizes));
+                    }}
+                    className="relative aspect-square w-full overflow-hidden bg-[#FAFAF8] cursor-pointer flex items-center justify-center p-3 sm:p-4"
+                  >
+                    <img
+                      src={imgUrl(item.image, 960)}
+                      decoding="async"
+                      alt={item.title}
+                      loading="lazy"
+                      className="max-h-[90%] max-w-[90%] object-contain mix-blend-multiply filter drop-shadow-[0_12px_16px_rgba(0,0,0,0.1)] transition-transform duration-700 ease-out group-hover:scale-108"
+                    />
 
-                  {/* Top-Right: Hover Inspect Pill */}
-                  <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/85 text-white p-2 rounded-full shadow-md">
-                    <Eye className="h-3.5 w-3.5" />
-                  </div>
-
-                  {/* Top-Left Edition Tag */}
-                  <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 flex-wrap max-w-[80%]">
-                    <span className="font-tech text-[8px] uppercase tracking-wider text-neutral-600 font-bold bg-white/90 px-2 py-0.5 rounded shadow-2xs border border-neutral-200">
-                      {item.edition}
-                    </span>
-                    {item.isAtelierFeatured && (
-                      <span className="font-tech text-[8px] uppercase tracking-wider text-[#9A7B4F] font-bold bg-amber-50/95 px-1.5 py-0.5 rounded shadow-2xs border border-amber-200 flex items-center gap-0.5">
-                        <Sparkles className="h-2 w-2 text-[#9A7B4F]" />
-                        Featured
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Bottom Edition Overlay */}
-                  <div className="absolute bottom-2 left-3 right-3 z-10 flex items-center justify-between text-[8px] font-tech uppercase tracking-widest text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Click to inspect details</span>
-                    <Sparkles className="h-2.5 w-2.5 text-[#9A7B4F]" />
-                  </div>
-                </div>
-
-                {/* Metadata Footer */}
-                <div className="p-4 sm:p-5 bg-white border-t border-neutral-200/80 space-y-2 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-sans text-sm sm:text-base font-semibold text-neutral-900 group-hover:text-black line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="font-sans text-xs text-neutral-500 line-clamp-1 mt-0.5">
-                      {item.finish}
-                    </p>
-                  </div>
-
-                  <div className="pt-2.5 flex items-center justify-between border-t border-neutral-100 mt-2">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-sans text-sm font-bold text-neutral-950">
-                        {formatPrice(item.price)}
-                      </span>
-                      {item.originalPrice && item.originalPrice > item.price && (
-                        <span className="font-sans text-xs text-neutral-400 line-through">
-                          {formatPrice(item.originalPrice)}
+                    {/* Top-Left: Edition Tag & Featured Badge */}
+                    <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1 max-w-[70%]">
+                      {item.edition && (
+                        <span className="font-tech text-[8.5px] uppercase tracking-[0.16em] font-bold text-[#E5B56D] bg-[#2A1A10]/90 backdrop-blur-xs px-2.5 py-1 rounded-full border border-[#C9A46A]/30 shadow-xs">
+                          {item.edition}
+                        </span>
+                      )}
+                      {item.isAtelierFeatured && (
+                        <span className="font-tech text-[8px] uppercase tracking-[0.15em] font-bold text-[#9A7B4F] bg-amber-50/95 px-2 py-0.5 rounded-full border border-amber-200/80 shadow-2xs flex items-center gap-1">
+                          <Sparkles className="h-2 w-2 text-[#9A7B4F]" />
+                          Featured
                         </span>
                       )}
                     </div>
-                    <button
-                      onClick={() => {
-                        setActiveItem(item);
-                        setSelectedSize(pickDefaultSize(item.product.sizes));
-                      }}
-                      className="font-tech text-[10px] uppercase tracking-wider font-bold text-neutral-800 hover:text-black inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform cursor-pointer"
-                    >
-                      <span>Inspect</span>
-                      <ArrowUpRight className="h-3 w-3" />
-                    </button>
+
+                    {/* Top-Right: Discount Tag & Wishlist Heart */}
+                    <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                      {hasDiscount && discountPct > 0 && (
+                        <span className="rounded-full bg-red-600 text-white font-sans text-[10px] font-bold px-2 py-0.5 shadow-xs tracking-tight">
+                          -{discountPct}%
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleWishlist(item.product);
+                        }}
+                        title={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full bg-white/95 backdrop-blur-xs shadow-sm transition-all hover:scale-110 cursor-pointer border border-black/5 ${
+                          inWishlist ? 'text-red-500 fill-red-500' : 'text-neutral-500 hover:text-red-500'
+                        }`}
+                      >
+                        <Heart className={`h-4 w-4 ${inWishlist ? 'fill-current text-red-500' : ''}`} />
+                      </button>
+                    </div>
+
+                    {/* Hover Quick View Floating Pill Button */}
+                    <div className="absolute inset-x-3 bottom-3 z-10 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveItem(item);
+                          setSelectedSize(pickDefaultSize(item.product.sizes));
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-white/95 backdrop-blur-md text-neutral-900 text-xs font-semibold shadow-md hover:bg-neutral-950 hover:text-white transition-all ring-1 ring-black/10 cursor-pointer"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        <span>Quick View</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Metadata & Details */}
+                  <div className="p-4 sm:p-5 bg-white space-y-2.5 flex-1 flex flex-col justify-between">
+                    <div>
+                      {/* Category kicker & Rating */}
+                      <div className="flex items-center justify-between text-[10px] font-tech uppercase tracking-[0.2em] font-bold text-[#A8824C] mb-1">
+                        <span>
+                          {item.category === 'boot' ? 'Chelsea Boots' : item.category === 'oxford' ? 'Oxfords & Brogues' : item.category === 'loafer' ? 'Loafers & Casuals' : item.category === 'sandal' ? 'Sandals' : item.category === 'slide' ? 'Slides & Mules' : 'Handcrafted'}
+                        </span>
+                        {item.product.rating > 0 && (
+                          <span className="flex items-center gap-0.5 text-neutral-700 font-sans font-semibold">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                            <span>{item.product.rating.toFixed(1)}</span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Product Title */}
+                      <Link to={`/product/${item.slug}`} className="block group/link">
+                        <h3
+                          style={{ fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif" }}
+                          className="text-base sm:text-[17px] font-semibold text-neutral-950 group-hover/link:text-[#A8824C] transition-colors line-clamp-1 leading-snug"
+                        >
+                          {item.title}
+                        </h3>
+                      </Link>
+
+                      {/* Subtitle / Finish */}
+                      <p className="text-xs text-neutral-500 line-clamp-1 mt-1 font-normal leading-relaxed">
+                        {item.finish || item.leather}
+                      </p>
+                    </div>
+
+                    {/* Color swatches & EU Size Range */}
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-1.5">
+                        {item.product.colors && item.product.colors.length > 0 ? (
+                          item.product.colors.slice(0, 4).map(c => (
+                            <span
+                              key={c.name}
+                              title={c.name}
+                              className="h-3 w-3 rounded-full border border-black/15 shadow-2xs"
+                              style={{ backgroundColor: c.hex }}
+                            />
+                          ))
+                        ) : (
+                          <span className="h-3 w-3 rounded-full bg-[#4A2E1B] border border-black/15 shadow-2xs" />
+                        )}
+                        {item.product.colors && item.product.colors.length > 4 && (
+                          <span className="text-[10px] text-neutral-400 font-semibold font-tech">
+                            +{item.product.colors.length - 4}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] font-tech text-neutral-400 font-semibold uppercase tracking-wider">
+                        EU 39–45
+                      </span>
+                    </div>
+
+                    {/* Price and Action Button Bar */}
+                    <div className="pt-3 flex items-center justify-between border-t border-neutral-100 mt-2">
+                      <div className="flex flex-col">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="font-sans text-base sm:text-lg font-bold text-neutral-950 tracking-tight">
+                            {formatPrice(item.price)}
+                          </span>
+                          {hasDiscount && (
+                            <span className="font-sans text-xs text-neutral-400 line-through font-medium">
+                              {formatPrice(item.originalPrice!)}
+                            </span>
+                          )}
+                        </div>
+                        {hasDiscount && savings > 0 && (
+                          <span className="text-[9.5px] text-emerald-700 font-bold font-tech uppercase tracking-wide">
+                            Save {formatPrice(savings)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {isAdmin && (
+                          <Link
+                            to={`/admin/products?edit=${encodeURIComponent(item.product.id || item.slug)}`}
+                            title="Edit this product in Admin"
+                            className="inline-flex items-center gap-1 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white px-2.5 py-1 text-[10px] font-bold transition-all border border-neutral-200"
+                          >
+                            <Edit className="h-2.5 w-2.5 text-amber-500" />
+                            <span>Edit</span>
+                          </Link>
+                        )}
+                        <Link
+                          to={`/product/${item.slug}`}
+                          className="font-tech text-[10.5px] uppercase tracking-wider font-bold text-neutral-900 hover:text-white bg-neutral-100 hover:bg-neutral-950 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
+                        >
+                          <span>View</span>
+                          <ArrowUpRight className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </motion.div>
 
