@@ -40,12 +40,13 @@ async function seedInitialData() {
       await Product.insertMany(SEED_PRODUCTS.map(({ _id, ...p }: any) => p));
       console.log(`✅ [Database] Seeded ${SEED_PRODUCTS.length} products.`);
     } else {
-      // Sync products to ensure latest image assets, slugs, and brand are up to date
+      // Sync seed products: ensure any missing seed products are inserted without overwriting admin edits
       for (const sp of SEED_PRODUCTS) {
-        await Product.updateOne(
-          { $or: [{ id: sp.id }, { slug: sp.slug }] },
-          { $set: { slug: sp.slug, brand: sp.brand, images: sp.images, name: sp.name, price: sp.price, salePrice: sp.salePrice, colors: sp.colors } }
-        );
+        const exists = await Product.findOne({ $or: [{ id: sp.id }, { slug: sp.slug }] });
+        if (!exists) {
+          const { _id, ...toInsert }: any = sp;
+          await Product.create(toInsert);
+        }
       }
     }
 

@@ -106,7 +106,7 @@ export const HomePage: React.FC<{ products: Product[] }> = ({ products }) => {
       <InteractiveShowcase products={products} />
 
       {/* 8. Handmade collection gallery */}
-      <AtelierPhotoGallery />
+      <AtelierPhotoGallery products={products} />
 
       {/* 9. Banner */}
       <CollectionBanner

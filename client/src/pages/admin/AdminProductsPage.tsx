@@ -28,6 +28,7 @@ interface ColorRow { name: string; hex: string }
 interface FormState {
   name: string;
   tagline: string;
+  edition: string;
   priceRs: string;
   salePriceRs: string;
   category: string;
@@ -54,6 +55,7 @@ interface FormState {
 const EMPTY_FORM: FormState = {
   name: '',
   tagline: '',
+  edition: '',
   priceRs: '',
   salePriceRs: '',
   category: 'lifestyle',
@@ -148,6 +150,7 @@ export const AdminProductsPage: React.FC = () => {
     setForm({
       name: p.name,
       tagline: p.tagline || '',
+      edition: p.edition || '',
       priceRs: String(toRupees(p.price)),
       salePriceRs: p.salePrice ? String(toRupees(p.salePrice)) : '',
       category: p.category,
@@ -207,6 +210,7 @@ export const AdminProductsPage: React.FC = () => {
     const payload = {
       name: form.name.trim(),
       tagline: form.tagline.trim(),
+      edition: form.edition.trim(),
       brand: 'QADAM',
       price: fromRupees(price),
       salePrice: form.salePriceRs ? fromRupees(sale) : 0, // 0 = no sale (undefined was dropped and never cleared the old sale)
@@ -452,6 +456,7 @@ export const AdminProductsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1 text-[11px] font-semibold">
+                          {p.edition && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-amber-900 ring-1 ring-amber-200/70">{p.edition}</span>}
                           {p.isNewArrival && <span className="rounded-full bg-neutral-950 px-2 py-0.5 text-white">New</span>}
                           {p.isBestSeller && <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-neutral-700">Best Seller</span>}
                           {p.isTrending && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-sky-700">Trending</span>}
@@ -528,8 +533,11 @@ export const AdminProductsPage: React.FC = () => {
                       <option value="unisex">Everyone</option>
                     </select>
                   </Field>
-                  <Field label="Short line" hint="One line shown under the name">
+                  <Field label="Short line" hint="One line shown under the name (finish / subtitle)">
                     <input value={form.tagline} onChange={e => set('tagline', e.target.value)} placeholder="Soft leather, handmade" className={inputCls} />
+                  </Field>
+                  <Field label="Edition badge" hint="Top tag on shoe card (e.g. Summer Atelier, Resort Archive, Limited Edition)">
+                    <input value={form.edition} onChange={e => set('edition', e.target.value)} placeholder="e.g. Summer Atelier" className={inputCls} />
                   </Field>
                   <Field label="Description" className="sm:col-span-2">
                     <textarea rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder="Tell customers about this shoe…" className={inputCls} />

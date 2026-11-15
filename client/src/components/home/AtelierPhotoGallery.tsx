@@ -235,6 +235,26 @@ export const ATELIER_PHOTOS: AtelierPhoto[] = [
   }
 ];
 
+export interface AtelierGalleryItem {
+  id: string;
+  title: string;
+  category: 'oxford' | 'loafer' | 'boot' | 'monk' | 'sandal' | 'slide';
+  leather: string;
+  finish: string;
+  image: string;
+  edition: string;
+  price: number;
+  originalPrice?: number;
+  slug: string;
+  product: Product;
+  specs: {
+    hide: string;
+    construction: string;
+    last: string;
+    insole: string;
+  };
+}
+
 const CATEGORIES = [
   { id: 'all', label: 'All Shoes' },
   { id: 'oxford', label: 'Oxfords & Brogues' },
@@ -246,18 +266,18 @@ const CATEGORIES = [
 
 export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ products = INITIAL_PRODUCTS }) => {
   const [selectedCat, setSelectedCat] = useState<string>('all');
-  const [activePhoto, setActivePhoto] = useState<AtelierPhoto | null>(null);
+  const [activeItem, setActiveItem] = useState<AtelierGalleryItem | null>(null);
   const [selectedSize, setSelectedSize] = useState<number>(9);
   const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
 
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
-  const { formatPrice, convertPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setActivePhoto(null);
+      if (e.key === 'Escape') setActiveItem(null);
     };
-    if (activePhoto) {
+    if (activeItem) {
       window.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     } else {
@@ -267,36 +287,127 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [activePhoto]);
+  }, [activeItem]);
+
+  const sourceProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
+  const liveProducts = sourceProducts.filter(p => p.status !== 'draft');
+
+  // Build dynamic gallery items by merging live products with the showcase photos:
+  const galleryItems: AtelierGalleryItem[] = React.useMemo(() => {
+    // 1. Map existing ATELIER_PHOTOS with live data from products
+    const mapped: AtelierGalleryItem[] = ATELIER_PHOTOS.map(photo => {
+      const matched = liveProducts.find(p =>
+        p.slug === photo.slug ||
+        p.id === photo.slug ||
+        p.slug === photo.slug.replace(/^qadam-/, 'aura-') ||
+        p.slug.replace(/^qadam-/, '') === photo.slug.replace(/^qadam-/, '') ||
+        (p.name && photo.title && p.name.trim().toLowerCase() === photo.title.trim().toLowerCase())
+      );
+
+      const targetProd = matched || INITIAL_PRODUCTS.find(p => p.slug === photo.slug) || INITIAL_PRODUCTS[0];
+      const effPrice = targetProd.salePrice && targetProd.salePrice < targetProd.price ? targetProd.salePrice : targetProd.price;
+
+      // Edition badge: prioritize admin custom edition, then special tags, then default photo edition
+      let edition = targetProd.edition?.trim() || '';
+      if (!edition) {
+        if (targetProd.isLimitedEdition) edition = 'Limited Edition // 200 Pairs';
+        else if (targetProd.isTrending) edition = 'Trending Pick';
+        else if (targetProd.isBestSeller) edition = 'Best Seller';
+        else if (targetProd.isNewArrival) edition = 'New Arrival';
+        else edition = photo.edition;
+      }
+
+      return {
+        id: targetProd.id || photo.id,
+        title: targetProd.name || photo.title,
+        category: photo.category,
+        leather: targetProd.specs?.upperMaterial || photo.leather,
+        finish: targetProd.tagline || photo.finish,
+        image: targetProd.images?.[0] || targetProd.colors?.[0]?.previewImage || photo.image,
+        edition,
+        price: effPrice,
+        originalPrice: targetProd.price,
+        slug: targetProd.slug || photo.slug,
+        product: targetProd,
+        specs: {
+          hide: targetProd.specs?.upperMaterial || photo.specs.hide,
+          construction: targetProd.specs?.soleMaterial || photo.specs.construction,
+          last: targetProd.specs?.fit || photo.specs.last,
+          insole: targetProd.specs?.cushioning || photo.specs.insole,
+        }
+      };
+    });
+
+    // 2. Also append any extra store products created in Admin Panel that aren't already represented
+    const extras: AtelierGalleryItem[] = liveProducts
+      .filter(p => !mapped.some(m => m.slug === p.slug || m.id === p.id))
+      .map(p => {
+        const slugLower = (p.slug || '').toLowerCase();
+        const nameLower = (p.name || '').toLowerCase();
+        let cat: AtelierPhoto['category'] = 'loafer';
+        if (slugLower.includes('monk') || nameLower.includes('monk')) cat = 'monk';
+        else if (p.category === 'chelsea-boots' || slugLower.includes('boot') || slugLower.includes('chelsea') || nameLower.includes('boot')) cat = 'boot';
+        else if (p.category === 'sandals' || slugLower.includes('sandal') || nameLower.includes('sandal')) cat = 'sandal';
+        else if (p.category === 'slides' || slugLower.includes('slide') || nameLower.includes('slide')) cat = 'slide';
+        else if (p.category === 'formals' || slugLower.includes('oxford') || slugLower.includes('brogue') || nameLower.includes('oxford') || nameLower.includes('brogue') || nameLower.includes('wholecut') || nameLower.includes('derby')) cat = 'oxford';
+
+        let edition = p.edition?.trim() || '';
+        if (!edition) {
+          if (p.isLimitedEdition) edition = 'Limited Edition';
+          else if (p.isTrending) edition = 'Trending Pick';
+          else if (p.isBestSeller) edition = 'Best Seller';
+          else if (p.isNewArrival) edition = 'New Arrival';
+          else if (cat === 'sandal') edition = 'Summer Atelier';
+          else if (cat === 'slide') edition = 'Resort Archive';
+          else if (cat === 'boot') edition = 'Winter Atelier';
+          else if (p.category === 'casuals') edition = 'Bespoke Casual';
+          else edition = 'Handmade in Italy';
+        }
+
+        const effPrice = p.salePrice && p.salePrice < p.price ? p.salePrice : p.price;
+
+        return {
+          id: p.id,
+          title: p.name,
+          category: cat,
+          leather: p.specs?.upperMaterial || 'Full-Grain Box Calfskin',
+          finish: p.tagline || p.description || 'Handcrafted Luxury Leather',
+          image: p.images?.[0] || p.colors?.[0]?.previewImage || '/images/shoes/oxford-brogue-transparent.png',
+          edition,
+          price: effPrice,
+          originalPrice: p.price,
+          slug: p.slug,
+          product: p,
+          specs: {
+            hide: p.specs?.upperMaterial || 'Full-Grain Box Calfskin',
+            construction: p.specs?.soleMaterial || 'Goodyear Welt Sole',
+            last: p.specs?.fit || 'Anatomical Milanese Last',
+            insole: p.specs?.cushioning || 'Molded Natural Cork Bedding',
+          }
+        };
+      });
+
+    return [...mapped, ...extras];
+  }, [liveProducts]);
 
   const filtered = selectedCat === 'all'
-    ? ATELIER_PHOTOS
-    : ATELIER_PHOTOS.filter(p => {
+    ? galleryItems
+    : galleryItems.filter(p => {
         if (selectedCat === 'sandal') return p.category === 'sandal' || p.category === 'slide';
         return p.category === selectedCat;
       });
 
-  const getTargetProduct = (photo: AtelierPhoto): Product => {
-    const matched = products.find(p => p.slug === photo.slug || p.id === photo.slug || p.slug === photo.slug.replace(/^qadam-/, 'aura-'));
-    if (matched) return matched;
-    return products[0] || INITIAL_PRODUCTS[0];
-  };
-
-  // The real shop product behind the photo: its price, sizes and stock are what the customer actually buys
-  const product = activePhoto ? getTargetProduct(activePhoto) : null;
-  // Older products store US sizes; like the product page, they then offer every standard size
+  const product = activeItem ? activeItem.product : null;
   const euOnly = (product?.sizes || []).filter(s => s >= 30).sort((a, b) => a - b);
   const productSizes = euOnly.length ? euOnly : SIZE_OPTIONS;
-  const price = product ? (product.salePrice && product.salePrice < product.price ? product.salePrice : product.price) : 0;
+  const price = activeItem ? activeItem.price : 0;
 
-  // Pick a sensible default size each time a photo is opened
   useEffect(() => {
     if (!product) return;
     const def = pickDefaultSize(product.sizes);
     setSelectedSize(productSizes.includes(def) && !isSoldOut(product, def) ? def : productSizes.find(s => !isSoldOut(product, s)) || def);
     setAddedSuccess(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePhoto?.id]);
+  }, [activeItem?.id]);
 
   const sizeOut = !!product && isSoldOut(product, selectedSize);
 
@@ -306,7 +417,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
     setAddedSuccess(true);
     setTimeout(() => {
       setAddedSuccess(false);
-      setActivePhoto(null);
+      setActiveItem(null);
       setIsCartOpen(true);
     }, 700);
   };
@@ -314,7 +425,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   const handleBuyNow = () => {
     if (!product || sizeOut) return;
     addToCart(product, product.colors?.[0]?.name || 'Standard', selectedSize, 1, null);
-    setActivePhoto(null);
+    setActiveItem(null);
     setIsCheckoutOpen(true);
   };
 
@@ -376,7 +487,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 {/* Image Canvas with hover zoom */}
                 <div
                   onClick={() => {
-                    setActivePhoto(item);
+                    setActiveItem(item);
                     setSelectedSize(9);
                   }}
                   className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-[#FAF8F5] to-[#F2EFEA] cursor-pointer flex items-center justify-center p-4"
@@ -419,12 +530,19 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   </div>
 
                   <div className="pt-2.5 flex items-center justify-between border-t border-neutral-100 mt-2">
-                    <span className="font-sans text-sm font-bold text-neutral-950">
-                      Rs. {item.priceRs.toLocaleString()}
-                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-sans text-sm font-bold text-neutral-950">
+                        {formatPrice(item.price)}
+                      </span>
+                      {item.originalPrice && item.originalPrice > item.price && (
+                        <span className="font-sans text-xs text-neutral-400 line-through">
+                          {formatPrice(item.originalPrice)}
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={() => {
-                        setActivePhoto(item);
+                        setActiveItem(item);
                         setSelectedSize(9);
                       }}
                       className="font-tech text-[10px] uppercase tracking-wider font-bold text-neutral-800 hover:text-black inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform cursor-pointer"
@@ -466,14 +584,14 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
 
       {/* ── Product preview modal ── */}
       <AnimatePresence>
-        {activePhoto && product && (
+        {activeItem && product && (
           <motion.div
             key="atelier-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setActivePhoto(null)}
+            onClick={() => setActiveItem(null)}
             className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-6"
           >
             <motion.div
@@ -489,7 +607,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
             >
               <button
                 type="button"
-                onClick={() => setActivePhoto(null)}
+                onClick={() => setActiveItem(null)}
                 aria-label="Close"
                 className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-700 shadow-sm ring-1 ring-neutral-200 backdrop-blur transition hover:bg-neutral-950 hover:text-white cursor-pointer"
               >
@@ -499,11 +617,11 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               {/* Photo */}
               <div className="relative flex items-center justify-center bg-[#F5F3EF] p-6 sm:p-10 md:min-h-0">
                 <span className="absolute left-4 top-4 rounded-full bg-white px-3 py-1 text-[11px] font-medium text-neutral-700 shadow-sm">
-                  {activePhoto.edition}
+                  {activeItem.edition}
                 </span>
                 <img
-                  src={imgUrl(activePhoto.image, 960)}
-                  srcSet={imgSrcSet(activePhoto.image, [480, 720, 960, 1200])}
+                  src={imgUrl(activeItem.image, 960)}
+                  srcSet={imgSrcSet(activeItem.image, [480, 720, 960, 1200])}
                   sizes="(min-width: 768px) 448px, 100vw"
                   decoding="async"
                   alt={product.name}
@@ -517,7 +635,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 <h3 id="atelier-modal-title" className="mt-2 pr-10 font-serif text-2xl leading-tight text-neutral-950 sm:text-[28px]">
                   {product.name}
                 </h3>
-                {activePhoto.finish && <p className="mt-1 text-sm text-neutral-500">{activePhoto.finish}</p>}
+                {activeItem.finish && <p className="mt-1 text-sm text-neutral-500">{activeItem.finish}</p>}
 
                 <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <span className="text-2xl font-semibold text-neutral-950">{formatPrice(price)}</span>
@@ -564,10 +682,10 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 {/* Details list */}
                 <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-neutral-100 pt-5 text-sm">
                   {[
-                    ['Leather', activePhoto.specs.hide],
-                    ['Construction', activePhoto.specs.construction],
-                    ['Fit', activePhoto.specs.last],
-                    ['Insole', activePhoto.specs.insole],
+                    ['Leather', activeItem.specs.hide],
+                    ['Construction', activeItem.specs.construction],
+                    ['Fit', activeItem.specs.last],
+                    ['Insole', activeItem.specs.insole],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <dt className="text-xs text-neutral-400">{k}</dt>
@@ -581,7 +699,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   {sizeOut ? (
                     <p className="rounded-lg bg-neutral-50 px-3 py-3 text-center text-sm text-neutral-600 ring-1 ring-neutral-200">
                       {sizeLabel(selectedSize)} is sold out.{' '}
-                      <Link to={`/product/${product.slug}`} onClick={() => setActivePhoto(null)} className="font-medium underline underline-offset-2">Get notified</Link>
+                      <Link to={`/product/${product.slug}`} onClick={() => setActiveItem(null)} className="font-medium underline underline-offset-2">Get notified</Link>
                     </p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
@@ -603,7 +721,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   )}
                   <Link
                     to={`/product/${product.slug}`}
-                    onClick={() => setActivePhoto(null)}
+                    onClick={() => setActiveItem(null)}
                     className="flex items-center justify-center gap-1 pt-1 text-xs text-neutral-500 underline-offset-2 hover:text-neutral-900 hover:underline"
                   >
                     View full details <ArrowUpRight className="h-3 w-3" />

@@ -49,6 +49,7 @@ export interface Product {
   isBestSeller: boolean;
   isTrending: boolean;
   isLimitedEdition: boolean;
+  edition?: string;
   status?: 'draft' | 'live';
   reviews: ReviewItem[];
   createdAt?: string;
