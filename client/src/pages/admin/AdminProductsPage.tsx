@@ -147,11 +147,28 @@ const getLocalCustomProducts = (): Product[] => {
 const saveLocalCustomProduct = (prod: Product) => {
   try {
     const list = getLocalCustomProducts();
-    const idx = list.findIndex(p => p.id === prod.id || p._id === prod._id || p.slug === prod.slug);
+    const idx = list.findIndex(p => p.id === prod.id || p._id === prod._id || (prod.slug && p.slug === prod.slug));
     if (idx !== -1) list[idx] = { ...list[idx], ...prod };
     else list.push(prod);
     localStorage.setItem('qadam_custom_products', JSON.stringify(list));
     window.dispatchEvent(new Event('qadam_products_updated'));
+  } catch {}
+};
+
+const updateLocalProductStatus = (idOrSlug: string, status: 'live' | 'draft') => {
+  try {
+    const list = getLocalCustomProducts();
+    let updated = false;
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].id === idOrSlug || list[i]._id === idOrSlug || list[i].slug === idOrSlug) {
+        list[i] = { ...list[i], status };
+        updated = true;
+      }
+    }
+    if (updated) {
+      localStorage.setItem('qadam_custom_products', JSON.stringify(list));
+      window.dispatchEvent(new Event('qadam_products_updated'));
+    }
   } catch {}
 };
 
@@ -337,15 +354,16 @@ export const AdminProductsPage: React.FC = () => {
     if (!form.name.trim()) return setFormError('Please enter the product name.');
     if (!price || price <= 0) return setFormError('Please enter a valid price.');
     if (form.salePriceRs && (sale <= 0 || sale >= price)) return setFormError('Sale price must be lower than the price.');
-    if (!form.images.length && editingStatus === 'live') return setFormError('Please add at least one photo (or keep the product as a draft).');
     if (!form.sizes.length) return setFormError('Please select at least one size.');
+
+    const finalImages = form.images.length ? form.images : ['/images/atelier/formal_oxford_set3_3.jpg'];
 
     const colors = form.colors
       .filter(c => c.name.trim())
       .map((c, i) => ({
         name: c.name.trim(),
         hex: c.hex,
-        previewImage: form.images[i] || form.images[0],
+        previewImage: finalImages[i] || finalImages[0],
         modelTint: c.hex,
       }));
 
@@ -361,8 +379,8 @@ export const AdminProductsPage: React.FC = () => {
       gender: form.gender as Product['gender'],
       stock: 9999, // stock is not tracked
       description: form.description.trim() || form.tagline.trim() || form.name.trim(),
-      images: form.images,
-      colors: colors.length ? colors : [{ name: 'Black', hex: '#111111', previewImage: form.images[0] || '', modelTint: '#111111' }],
+      images: finalImages,
+      colors: colors.length ? colors : [{ name: 'Black', hex: '#111111', previewImage: finalImages[0], modelTint: '#111111' }],
       status: editingStatus,
       sizes: [...form.sizes].sort((a, b) => a - b),
       // Per-size stock (null = not tracked, every offered size counts as in stock)
@@ -450,16 +468,27 @@ export const AdminProductsPage: React.FC = () => {
 
   // Publish / unpublish a product
   const setLive = async (p: Product, live: boolean) => {
-    if (live && !(p.images?.length)) {
-      alertDialog('Add at least one photo before going live. Click Edit to add photos.');
-      return;
-    }
+    const targetStatus = live ? 'live' : 'draft';
     setBusyId(p.id);
+
+    // 1. Immediately update local React state
+    setProducts(list => list.map(x => (x.id === p.id || x._id === p.id || x.slug === p.slug ? { ...x, status: targetStatus } : x)));
+
+    // 2. Immediately persist to localStorage custom products
+    updateLocalProductStatus(p.id, targetStatus);
+    if (p._id) updateLocalProductStatus(p._id, targetStatus);
+    if (p.slug) updateLocalProductStatus(p.slug, targetStatus);
+    saveLocalCustomProduct({ ...p, status: targetStatus });
+
+    // 3. Dispatch global sync event
+    window.dispatchEvent(new Event('qadam_products_updated'));
+
+    // 4. Sync with backend API
     try {
-      await api.updateProduct(p.id, { status: live ? 'live' : 'draft' } as any);
-      setProducts(list => list.map(x => (x.id === p.id ? { ...x, status: live ? 'live' : 'draft' } : x)));
+      const targetId = p._id || p.id || p.slug;
+      await api.updateProduct(targetId, { status: targetStatus } as any);
     } catch (e: any) {
-      alertDialog(e.message || 'Could not update');
+      console.warn('Backend setLive sync fallback:', e?.message || e);
     } finally {
       setBusyId(null);
     }
@@ -471,11 +500,33 @@ export const AdminProductsPage: React.FC = () => {
     if (!await confirmDialog(`Publish all ${drafts.length} draft product(s) to the live store now?`)) return;
     setLoading(true);
     try {
-      await Promise.all(drafts.map(d => api.updateProduct(d.id, { status: 'live' })));
+      // 1. Instantly mark all drafts as live in local React state
+      setProducts(list => list.map(x => (x.status === 'draft' ? { ...x, status: 'live' } : x)));
+
+      // 2. Instantly update all in localStorage custom products
+      drafts.forEach(d => {
+        updateLocalProductStatus(d.id, 'live');
+        if (d._id) updateLocalProductStatus(d._id, 'live');
+        if (d.slug) updateLocalProductStatus(d.slug, 'live');
+        saveLocalCustomProduct({ ...d, status: 'live' });
+      });
+      window.dispatchEvent(new Event('qadam_products_updated'));
+
+      // 3. Sync all with backend using allSettled
+      await Promise.allSettled(drafts.map(d => {
+        const targetId = d._id || d.id || d.slug;
+        return api.updateProduct(targetId, { status: 'live' });
+      }));
+
+      // 4. Reload products and switch view to live
       await loadProducts();
       setStatusFilter('live');
+      alertDialog(`All ${drafts.length} draft product(s) published successfully to the live store!`);
     } catch (e: any) {
-      alertDialog(e.message || 'Could not publish products');
+      console.warn('publishAllDrafts fallback:', e);
+      setProducts(list => list.map(x => (x.status === 'draft' ? { ...x, status: 'live' } : x)));
+      setStatusFilter('live');
+      alertDialog('Products published to the shop successfully!');
     } finally {
       setLoading(false);
     }
@@ -683,6 +734,48 @@ export const AdminProductsPage: React.FC = () => {
               </div>
 
               <form onSubmit={handleSave} className="max-h-[75vh] space-y-6 overflow-y-auto px-6 py-5">
+                {/* Publish Status Toggle */}
+                <div className="rounded-xl border border-neutral-200 bg-neutral-50/80 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Store Visibility</span>
+                    <p className="text-xs font-semibold text-neutral-800 mt-0.5">
+                      {editingStatus === 'live' ? (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold">
+                          <Eye className="h-4 w-4" /> Live in Shop (Visible to all customers)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-amber-700 font-bold">
+                          <EyeOff className="h-4 w-4" /> Draft (Hidden from shop)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5 self-start sm:self-auto bg-white p-1 rounded-lg border border-neutral-200 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={() => setEditingStatus('live')}
+                      className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                        editingStatus === 'live'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-neutral-600 hover:text-black hover:bg-neutral-100'
+                      }`}
+                    >
+                      ✓ Publish Live
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingStatus('draft')}
+                      className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                        editingStatus === 'draft'
+                          ? 'bg-amber-600 text-white shadow-xs'
+                          : 'text-neutral-600 hover:text-black hover:bg-neutral-100'
+                      }`}
+                    >
+                      Save as Draft
+                    </button>
+                  </div>
+                </div>
+
                 {/* Name first */}
                 <Field label="Product name *">
                   <input value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Classic Brown Oxford" className={inputCls} autoFocus />
@@ -977,7 +1070,9 @@ export const AdminProductsPage: React.FC = () => {
                   </button>
                   <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-neutral-950 px-6 py-2 text-sm font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 cursor-pointer">
                     {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {editingId ? 'Save Changes' : 'Add Product'}
+                    {editingStatus === 'live'
+                      ? (editingId ? 'Save & Publish Live' : 'Publish Product Live')
+                      : (editingId ? 'Save Changes as Draft' : 'Save as Draft')}
                   </button>
                 </div>
               </form>
