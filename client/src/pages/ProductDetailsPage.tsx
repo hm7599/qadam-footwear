@@ -401,7 +401,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                     <Ruler className="h-3.5 w-3.5" /> Size guide
                   </button>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="flex flex-wrap gap-2.5 sm:gap-3">
                   {displaySizes(product.sizes).map(sz => {
                     const available = !hasEuSizes || product.sizes.includes(sz);
                     const active = selectedSize === sz;
@@ -412,11 +412,11 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                         disabled={!available}
                         onClick={() => { setSelectedSize(sz); setSizeError(false); }}
                         title={!available ? 'Not available' : out ? 'Sold out – tap to get notified' : undefined}
-                        className={`relative h-12 overflow-hidden rounded-xl text-sm font-medium transition-all ${
+                        className={`relative h-12 w-12 sm:h-13 sm:w-13 flex items-center justify-center rounded-xl text-sm font-semibold transition-all select-none ${
                           !available
-                            ? 'cursor-not-allowed bg-neutral-100 text-neutral-300'
+                            ? 'cursor-not-allowed bg-white text-neutral-400 ring-1 ring-neutral-200 opacity-60'
                             : active
-                            ? out ? 'bg-neutral-200 text-neutral-500 ring-2 ring-neutral-950' : 'bg-neutral-950 text-white shadow-md'
+                            ? out ? 'bg-neutral-200 text-neutral-500 ring-2 ring-neutral-950' : 'bg-neutral-950 text-white shadow-md ring-2 ring-neutral-950'
                             : out
                             ? 'bg-neutral-50 text-neutral-400 ring-1 ring-dashed ring-neutral-200 hover:ring-neutral-500 cursor-pointer'
                             : sizeError
@@ -425,8 +425,8 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                         }`}
                       >
                         {sizeLabel(sz)}
-                        {out && <span className="absolute inset-x-0 bottom-0.5 text-[9px] font-medium uppercase tracking-wide text-neutral-400">Sold out</span>}
-                        {!available && <span className="absolute left-1/2 top-1/2 h-px w-[120%] -translate-x-1/2 -translate-y-1/2 -rotate-[20deg] bg-neutral-300" />}
+                        {out && <span className="absolute inset-x-0 bottom-0.5 text-[8px] font-medium uppercase tracking-wide text-neutral-400">Sold out</span>}
+                        {!available && <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-[135%] -translate-x-1/2 -translate-y-1/2 -rotate-[45deg] bg-neutral-300" />}
                       </button>
                     );
                   })}

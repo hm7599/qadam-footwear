@@ -268,7 +268,7 @@ const CATEGORIES = [
 export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ products = INITIAL_PRODUCTS }) => {
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [activeItem, setActiveItem] = useState<AtelierGalleryItem | null>(null);
-  const [selectedSize, setSelectedSize] = useState<number>(9);
+  const [selectedSize, setSelectedSize] = useState<number>(42);
   const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
   const [shuffleCount, setShuffleCount] = useState<number>(0);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
@@ -587,7 +587,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                 <div
                   onClick={() => {
                     setActiveItem(item);
-                    setSelectedSize(9);
+                    setSelectedSize(pickDefaultSize(item.product.sizes));
                   }}
                   className="relative aspect-square w-full overflow-hidden bg-gradient-to-b from-[#FAF8F5] to-[#F2EFEA] cursor-pointer flex items-center justify-center p-4"
                 >
@@ -648,7 +648,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                     <button
                       onClick={() => {
                         setActiveItem(item);
-                        setSelectedSize(9);
+                        setSelectedSize(pickDefaultSize(item.product.sizes));
                       }}
                       className="font-tech text-[10px] uppercase tracking-wider font-bold text-neutral-800 hover:text-black inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform cursor-pointer"
                     >
@@ -789,7 +789,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                     <span className="font-medium text-neutral-900">Size</span>
                     <span className="text-neutral-500">{sizeLabelFull(selectedSize)}</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-5" role="radiogroup" aria-label="Choose a size">
+                  <div className="flex flex-wrap gap-2.5" role="radiogroup" aria-label="Choose a size">
                     {productSizes.map(sz => {
                       const out = isSoldOut(product, sz);
                       const on = selectedSize === sz;
@@ -801,19 +801,20 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                           aria-checked={on}
                           onClick={() => setSelectedSize(sz)}
                           title={out ? 'Sold out' : undefined}
-                          className={`relative h-11 rounded-lg text-sm font-medium transition cursor-pointer ${
-                            on ? 'bg-neutral-950 text-white'
-                              : out ? 'bg-neutral-50 text-neutral-300 ring-1 ring-neutral-100 line-through'
+                          className={`relative h-11 w-11 flex items-center justify-center rounded-lg text-sm font-semibold transition cursor-pointer select-none ${
+                            on ? 'bg-neutral-950 text-white shadow-md ring-2 ring-neutral-950'
+                              : out ? 'bg-neutral-50 text-neutral-400 ring-1 ring-dashed ring-neutral-300'
                               : 'bg-white text-neutral-800 ring-1 ring-neutral-200 hover:ring-neutral-900'
                           }`}
                         >
                           {sizeLabel(sz)}
+                          {out && <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-[135%] -translate-x-1/2 -translate-y-1/2 -rotate-[45deg] bg-neutral-300" />}
                         </button>
                       );
                     })}
                   </div>
-                  <p className="mt-1.5 text-[11px] text-neutral-400">
-                    UK sizes · <Link to="/size-guide" className="underline underline-offset-2 hover:text-neutral-700">Size guide</Link>
+                  <p className="mt-2 text-[11px] text-neutral-400">
+                    EU sizes · <Link to="/size-guide" className="underline underline-offset-2 hover:text-neutral-700">Size guide</Link>
                   </p>
                 </div>
 

@@ -95,18 +95,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 26,
     "images": [
@@ -163,18 +158,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 35,
     "images": [
@@ -219,18 +209,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 28,
     "images": [
@@ -275,18 +260,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 30,
     "images": [
@@ -331,18 +311,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 20,
     "images": [
@@ -387,18 +362,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 15,
     "images": [
@@ -443,18 +413,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 18,
     "images": [
@@ -500,18 +465,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 14,
     "images": [
@@ -557,18 +517,13 @@ export const SEED_PRODUCTS: ProductItem[] = [
       }
     ],
     "sizes": [
-      7,
-      7.5,
-      8,
-      8.5,
-      9,
-      9.5,
-      10,
-      10.5,
-      11,
-      11.5,
-      12,
-      13
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
     ],
     "stock": 16,
     "images": [
@@ -612,7 +567,15 @@ export const SEED_PRODUCTS: ProductItem[] = [
         "modelTint": "#3A241A"
       }
     ],
-    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "sizes": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
     "stock": 18,
     "images": [
       "/images/atelier/formal_horsebit_set5_2.jpg"
@@ -655,7 +618,15 @@ export const SEED_PRODUCTS: ProductItem[] = [
         "modelTint": "#111111"
       }
     ],
-    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "sizes": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
     "stock": 15,
     "images": [
       "/images/atelier/formal_boot_set2_3.jpg"
@@ -698,7 +669,15 @@ export const SEED_PRODUCTS: ProductItem[] = [
         "modelTint": "#141414"
       }
     ],
-    "sizes": [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 13],
+    "sizes": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
     "stock": 12,
     "images": [
       "/images/atelier/formal_prestige_set6_2.jpg"

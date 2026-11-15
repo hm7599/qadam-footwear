@@ -124,15 +124,15 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ products }) =>
                   Size Guide
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="flex flex-wrap gap-2">
                 {displaySizes(featuredProduct.sizes).map(sz => (
                   <button
                     key={sz}
                     onClick={() => setSelectedSize(sz)}
-                    className={`h-10 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    className={`h-11 w-11 flex items-center justify-center rounded-xl text-xs font-semibold transition-all cursor-pointer select-none ${
                       selectedSize === sz
-                        ? 'bg-neutral-950 text-white shadow-md'
-                        : 'bg-white text-neutral-700 ring-1 ring-black/5 hover:ring-neutral-900'
+                        ? 'bg-neutral-950 text-white shadow-md ring-2 ring-neutral-950'
+                        : 'bg-white text-neutral-700 ring-1 ring-neutral-200 hover:ring-neutral-900'
                     }`}
                   >
                     {sizeLabel(sz)}

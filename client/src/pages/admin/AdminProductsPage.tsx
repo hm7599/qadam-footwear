@@ -562,7 +562,7 @@ export const AdminProductsPage: React.FC = () => {
                       <button type="button" onClick={() => set('sizes', [])} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50 cursor-pointer">Clear</button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                  <div className="flex flex-wrap gap-2">
                     {sizeChips.map(s => {
                       const on = form.sizes.includes(s);
                       const custom = !SIZE_OPTIONS.includes(s);
@@ -572,12 +572,12 @@ export const AdminProductsPage: React.FC = () => {
                             type="button"
                             onClick={() => toggleSize(s)}
                             title={on ? 'Click to hide this size' : 'Click to offer this size'}
-                            className={`relative h-10 w-full overflow-hidden rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                              on ? 'bg-neutral-950 text-white' : 'bg-white text-neutral-400 ring-1 ring-neutral-200 hover:text-neutral-700'
+                            className={`relative h-11 w-11 flex items-center justify-center overflow-hidden rounded-lg text-sm font-semibold transition-colors cursor-pointer select-none ${
+                              on ? 'bg-neutral-950 text-white shadow-sm ring-1 ring-neutral-950' : 'bg-white text-neutral-400 ring-1 ring-neutral-200 hover:text-neutral-700'
                             }`}
                           >
                             {sizeLabel(s)}
-                            {!on && <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-[120%] -translate-x-1/2 -translate-y-1/2 -rotate-[20deg] bg-neutral-300" />}
+                            {!on && <span className="pointer-events-none absolute left-1/2 top-1/2 h-px w-[135%] -translate-x-1/2 -translate-y-1/2 -rotate-[45deg] bg-neutral-300" />}
                           </button>
                           {custom && (
                             <button type="button" onClick={() => removeSize(s)} title="Delete this custom size"

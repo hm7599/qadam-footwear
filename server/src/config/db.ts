@@ -50,6 +50,12 @@ async function seedInitialData() {
       }
     }
 
+    // Migrate any products that still have old US sizes (< 30) or empty sizes to EU sizes [39, 40, 41, 42, 43, 44, 45]
+    await Product.updateMany(
+      { $or: [{ sizes: { $elemMatch: { $lt: 30 } } }, { sizes: { $size: 0 } }, { sizes: { $exists: false } }] },
+      { $set: { sizes: [39, 40, 41, 42, 43, 44, 45] } }
+    );
+
     // Admin password always follows ADMIN_PASSWORD (min 10 chars). Without it, admin login stays disabled.
     const envPw = process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 10 ? process.env.ADMIN_PASSWORD : '';
     const adminUser: any = await User.findOne({ $or: [{ email: 'admin@qadamshoes.com' }, { email: 'admin@aurashoes.com' }] });

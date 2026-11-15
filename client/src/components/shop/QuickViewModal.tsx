@@ -189,11 +189,11 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
               <div className="space-y-2 mb-5 font-tech">
                 <div className="flex justify-between text-[10px] uppercase tracking-wider">
                   <span className={sizeError ? 'text-red-600 font-bold' : 'text-neutral-500'}>
-                    {sizeError ? 'Select size' : 'Size (EU/UK):'}
+                    {sizeError ? 'Select size' : 'Size (EU):'}
                   </span>
                   <span className="text-neutral-400 text-[9px]">{selectedSize ? sizeLabelFull(selectedSize) : ''}</span>
                 </div>
-                <div className="grid grid-cols-6 gap-1.5">
+                <div className="flex flex-wrap gap-2">
                   {product.sizes.map(sz => (
                     <button
                       key={sz}
@@ -201,10 +201,10 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                         setSelectedSize(sz);
                         setSizeError(false);
                       }}
-                      className={`py-2 text-[10px] font-bold transition-all ${
+                      className={`h-10 w-10 flex items-center justify-center text-xs font-semibold rounded-lg transition-all cursor-pointer select-none ${
                         selectedSize === sz
-                          ? 'bg-black text-white'
-                          : 'border border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-black hover:text-black'
+                          ? 'bg-black text-white shadow-sm'
+                          : 'border border-neutral-200 bg-white text-neutral-700 hover:border-black hover:text-black'
                       }`}
                     >
                       {sizeLabel(sz)}

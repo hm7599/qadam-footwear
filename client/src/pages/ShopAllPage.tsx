@@ -289,16 +289,16 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
                   {/* Size Filter */}
                   <div>
                     <h4 className="font-bold uppercase tracking-[0.2em] text-black mb-3 pb-2 border-b border-neutral-200 text-[10px]">
-                      Size (EU/UK)
+                      Size (EU)
                     </h4>
-                    <div className="grid grid-cols-4 gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {SIZES.map(sz => (
                         <button
                           key={sz}
                           onClick={() => setSelectedSize(selectedSize === sz ? null : sz)}
-                          className={`py-1.5 text-[10px] font-bold transition-all border ${
+                          className={`h-9 w-9 flex items-center justify-center text-xs font-semibold transition-all border rounded select-none cursor-pointer ${
                             selectedSize === sz
-                              ? 'bg-black text-white border-black'
+                              ? 'bg-black text-white border-black shadow-2xs'
                               : 'border-neutral-300 bg-white text-neutral-600 hover:border-black hover:text-black'
                           }`}
                         >
