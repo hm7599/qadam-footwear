@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Edit, Heart, Star } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
-import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
 import { isSoldOut } from '../shop/AlertForms';
@@ -281,7 +280,6 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
 
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
-  const { isAdmin } = useAuth();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
@@ -753,25 +751,13 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        {isAdmin && (
-                          <Link
-                            to={`/admin/products?edit=${encodeURIComponent(item.product.id || item.slug)}`}
-                            title="Edit this product in Admin"
-                            className="inline-flex items-center gap-1 rounded-full bg-neutral-100 hover:bg-neutral-900 text-neutral-700 hover:text-white px-2.5 py-1 text-[10px] font-bold transition-all border border-neutral-200"
-                          >
-                            <Edit className="h-2.5 w-2.5 text-amber-500" />
-                            <span>Edit</span>
-                          </Link>
-                        )}
-                        <Link
-                          to={`/product/${item.slug}`}
-                          className="font-tech text-[10.5px] uppercase tracking-wider font-bold text-neutral-900 hover:text-white bg-neutral-100 hover:bg-neutral-950 px-3.5 py-1.5 rounded-full inline-flex items-center gap-1 transition-all cursor-pointer shadow-2xs"
-                        >
-                          <span>View</span>
-                          <ArrowUpRight className="h-3 w-3" />
-                        </Link>
-                      </div>
+                      <Link
+                        to={`/product/${item.slug}`}
+                        className="font-tech text-[10.5px] uppercase tracking-wider font-bold text-neutral-900 hover:text-white bg-neutral-100 hover:bg-neutral-950 px-4 py-2 rounded-full inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                      >
+                        <span>View</span>
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Link>
                     </div>
                   </div>
                 </motion.div>
@@ -983,16 +969,6 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   >
                     View full details <ArrowUpRight className="h-3 w-3" />
                   </Link>
-                  {isAdmin && (
-                    <Link
-                      to={`/admin/products?edit=${encodeURIComponent(product.id || product.slug)}`}
-                      onClick={() => setActiveItem(null)}
-                      className="flex items-center justify-center gap-1.5 pt-2 text-xs font-semibold text-amber-800 hover:text-black cursor-pointer border-t border-neutral-100 mt-2"
-                    >
-                      <Edit className="h-3.5 w-3.5 text-amber-600" />
-                      <span>Edit this shoe in Admin Panel &rarr;</span>
-                    </Link>
-                  )}
                 </div>
               </div>
             </motion.div>
