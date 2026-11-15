@@ -8,7 +8,7 @@ import { markCartOrdered } from './recovery.js';
 const lock = createLock();
 
 export async function placeWebsiteOrder(input: {
-  customer: any; items: any[]; couponCode?: string; paymentMethod?: string; shippingMethod?: string; cartId?: string;
+  customer: any; items: any[]; couponCode?: string; paymentMethod?: string; shippingMethod?: string; cartId?: string; paymentScreenshot?: string;
 }): Promise<{ order: any } | { error: string; code: string }> {
   return lock(async () => {
     const q = await quote({
@@ -34,6 +34,7 @@ export async function placeWebsiteOrder(input: {
       totalAmount: q.total,
       couponCode: q.coupon?.code || '',
       paymentMethod: input.paymentMethod === 'cod' ? 'cod' : 'card',
+      paymentScreenshot: input.paymentScreenshot || '',
       shippingMethod: q.shippingMethod === 'express' ? 'Express Delivery' : (q.shippingCost === 0 ? 'Free Standard Delivery' : 'Standard Delivery'),
     });
 

@@ -100,6 +100,7 @@ export interface Order {
   shippingMethod: string;
   paymentMethod: 'card' | 'apple_pay' | 'google_pay' | 'cod';
   paymentStatus: 'paid' | 'pending' | 'failed';
+  paymentScreenshot?: string;
   orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   trackingNumber?: string;
   trackingCarrier?: string;

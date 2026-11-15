@@ -5,12 +5,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { api } from '../utils/api';
+import { api, compressImage } from '../utils/api';
 import { CouponBox, FreeShippingBar, PriceSummary } from '../components/cart/PromoWidgets';
 import { usePaymentSettings, onlineMethodNames } from '../utils/storeSettings';
 import confetti from 'canvas-confetti';
 import {
-  CreditCard, Truck, Lock, ArrowRight, ShoppingBag, X, Check,
+  CreditCard, Truck, Lock, ArrowRight, ShoppingBag, X, Check, Copy, UploadCloud,
   User, Mail, Phone, MapPin, Building2, Loader2, ShieldCheck, RotateCcw, AlertCircle,
 } from 'lucide-react';
 
@@ -74,6 +74,34 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [customer.name, customer.email, customer.phone, reminderConsent]);
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod');
+  const [paymentScreenshot, setPaymentScreenshot] = useState<string>('');
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, key: string) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    });
+  };
+
+  const handleReceiptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingReceipt(true);
+    setErrorMessage('');
+    try {
+      const dataUrl = await compressImage(file, 1600, 0.85);
+      setPaymentScreenshot(dataUrl);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to process screenshot.');
+    } finally {
+      setUploadingReceipt(false);
+      e.target.value = '';
+    }
+  };
+
   // Payment options come from Admin → Settings → Payments
   const pay = usePaymentSettings();
   const onlineNames = onlineMethodNames(pay);
@@ -144,6 +172,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
         cartId,
         shippingMethod,
         paymentMethod: paymentMethod === 'cod' ? 'cod' : 'card',
+        paymentScreenshot: paymentMethod === 'online' && paymentScreenshot ? paymentScreenshot : undefined,
       });
       try { confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } }); } catch { /* ignore */ }
       clearCart();
@@ -286,16 +315,221 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
                     />
                   )}
                   {showOnline && paymentMethod === 'online' && (
-                    <div className="space-y-2.5 rounded-2xl bg-[#FBF5EE] p-4 text-sm ring-1 ring-[#EADFD2]">
-                      {pay.bank.enabled && (pay.bank.accountNumber || pay.bank.iban) && (
-                        <div><p className="font-semibold text-neutral-900">Bank transfer{pay.bank.bankName ? ` · ${pay.bank.bankName}` : ''}</p>
-                          <p className="text-neutral-600">{pay.bank.accountTitle}{pay.bank.accountNumber ? ` · ${pay.bank.accountNumber}` : ''}</p>
-                          {pay.bank.iban && <p className="font-mono text-xs text-neutral-600">IBAN {pay.bank.iban}</p>}</div>
+                    <div className="space-y-3.5 rounded-2xl bg-[#FBF5EE] p-4 text-sm ring-1 ring-[#EADFD2]">
+                      {/* Bank Account Details Card */}
+                      {(pay.bank.enabled || !pay.easypaisa.enabled) && (
+                        <div className="rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-[#EADFD2]">
+                          <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7A4E30]">Bank Transfer (IBFT)</span>
+                              <p className="font-semibold text-neutral-900">{pay.bank.bankName || 'Meezan Bank'}</p>
+                            </div>
+                            <span className="rounded-full bg-[#F3E6D8] px-2.5 py-0.5 text-[10px] font-semibold text-[#7A4E30]">
+                              Instant Transfer
+                            </span>
+                          </div>
+
+                          <div className="mt-2.5 space-y-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-neutral-500">Account Title:</span>
+                              <span className="font-semibold text-neutral-900">{pay.bank.accountTitle || "QADAM Footwear"}</span>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-neutral-500">Account Number:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-bold text-neutral-900 text-[13px]">{pay.bank.accountNumber || '02010108923412'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(pay.bank.accountNumber || '02010108923412', 'bankAcc')}
+                                  className="inline-flex items-center gap-1 rounded bg-[#F4EDE4] px-2 py-0.5 text-[10px] font-semibold text-[#7A4E30] hover:bg-[#EADFD2] transition-colors cursor-pointer"
+                                  title="Copy account number"
+                                >
+                                  {copiedKey === 'bankAcc' ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-neutral-500">IBAN:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-[11px] font-medium text-neutral-800">{pay.bank.iban || 'PK45MEZN0002010108923412'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(pay.bank.iban || 'PK45MEZN0002010108923412', 'iban')}
+                                  className="inline-flex items-center gap-1 rounded bg-[#F4EDE4] px-2 py-0.5 text-[10px] font-semibold text-[#7A4E30] hover:bg-[#EADFD2] transition-colors cursor-pointer"
+                                  title="Copy IBAN"
+                                >
+                                  {copiedKey === 'iban' ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                      {pay.easypaisa.enabled && pay.easypaisa.number && <div><p className="font-semibold text-neutral-900">Easypaisa</p><p className="text-neutral-600">{pay.easypaisa.accountTitle} · {pay.easypaisa.number}</p></div>}
-                      {pay.jazzcash.enabled && pay.jazzcash.number && <div><p className="font-semibold text-neutral-900">JazzCash</p><p className="text-neutral-600">{pay.jazzcash.accountTitle} · {pay.jazzcash.number}</p></div>}
-                      {pay.raast.enabled && pay.raast.raastId && <div><p className="font-semibold text-neutral-900">Raast</p><p className="text-neutral-600">{pay.raast.raastId}</p></div>}
-                      {pay.instructions && <p className="border-t border-[#EADFD2] pt-2.5 text-xs text-neutral-600">{pay.instructions}</p>}
+
+                      {/* Easypaisa */}
+                      {pay.easypaisa.enabled && (
+                        <div className="rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-[#EADFD2]">
+                          <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+                            <div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Mobile Wallet</span>
+                              <p className="font-semibold text-neutral-900">Easypaisa</p>
+                            </div>
+                            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                              Instant
+                            </span>
+                          </div>
+
+                          <div className="mt-2.5 space-y-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-neutral-500">Account Title:</span>
+                              <span className="font-semibold text-neutral-900">{pay.easypaisa.accountTitle || 'QADAM Official'}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-neutral-500">Account Number:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-bold text-neutral-900 text-[13px]">{pay.easypaisa.number || '0300 8888000'}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(pay.easypaisa.number || '0300 8888000', 'epAcc')}
+                                  className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors cursor-pointer"
+                                  title="Copy number"
+                                >
+                                  {copiedKey === 'epAcc' ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* JazzCash if enabled */}
+                      {pay.jazzcash.enabled && pay.jazzcash.number && (
+                        <div className="rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-[#EADFD2]">
+                          <div className="flex items-center justify-between border-b border-neutral-100 pb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-red-600">JazzCash</span>
+                          </div>
+                          <div className="mt-2.5 space-y-2 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-neutral-500">Account Title:</span>
+                              <span className="font-semibold text-neutral-900">{pay.jazzcash.accountTitle}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-neutral-500">Account Number:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono font-bold text-neutral-900 text-[13px]">{pay.jazzcash.number}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(pay.jazzcash.number, 'jcAcc')}
+                                  className="inline-flex items-center gap-1 rounded bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700 hover:bg-red-100 cursor-pointer"
+                                >
+                                  {copiedKey === 'jcAcc' ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Raast if enabled */}
+                      {pay.raast.enabled && pay.raast.raastId && (
+                        <div className="rounded-xl bg-white p-3.5 shadow-sm ring-1 ring-[#EADFD2]">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-700">Raast Instant ID</span>
+                          <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                            <span className="text-neutral-500">Raast ID:</span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-bold text-neutral-900">{pay.raast.raastId}</span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(pay.raast.raastId, 'raastAcc')}
+                                className="inline-flex items-center gap-1 rounded bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700 hover:bg-orange-100 cursor-pointer"
+                              >
+                                {copiedKey === 'raastAcc' ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Payment Screenshot Upload */}
+                      <div className="rounded-xl border border-dashed border-[#C9A46A] bg-[#FFFDF9] p-3.5">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-semibold text-neutral-900 flex items-center gap-1.5">
+                            <UploadCloud className="h-4 w-4 text-[#7A4E30]" />
+                            Payment Screenshot / Receipt
+                          </label>
+                          <span className="text-[10px] font-medium text-[#7A4E30]">
+                            {paymentScreenshot ? 'Receipt Attached ✓' : 'Upload proof'}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-neutral-500">
+                          Transfer {formatPrice(total)} to the account above and attach your payment receipt screenshot.
+                        </p>
+
+                        {paymentScreenshot ? (
+                          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-white p-2.5 ring-1 ring-emerald-300 shadow-sm">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <img
+                                src={paymentScreenshot}
+                                alt="Payment Screenshot Preview"
+                                className="h-12 w-12 rounded-md object-cover ring-1 ring-neutral-200"
+                              />
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1">
+                                  <Check className="h-3.5 w-3.5 text-emerald-600" /> Screenshot Attached
+                                </p>
+                                <p className="text-[10px] text-neutral-500">Will be sent with your order</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setPaymentScreenshot('')}
+                              className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 cursor-pointer"
+                            >
+                              <X className="h-3.5 w-3.5" /> Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="mt-2.5">
+                            <label
+                              htmlFor="receipt-file-upload"
+                              className="flex w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-neutral-300 bg-white py-3 px-4 text-center cursor-pointer hover:border-[#7A4E30] hover:bg-[#FDFBF7] transition-all"
+                            >
+                              <input
+                                id="receipt-file-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={uploadingReceipt}
+                                onChange={handleReceiptChange}
+                              />
+                              {uploadingReceipt ? (
+                                <div className="flex items-center gap-2 text-xs text-neutral-600">
+                                  <Loader2 className="h-4 w-4 animate-spin text-[#7A4E30]" /> Processing screenshot…
+                                </div>
+                              ) : (
+                                <>
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A4E30]">
+                                    <UploadCloud className="h-4 w-4" /> Upload Payment Screenshot
+                                  </span>
+                                  <span className="text-[10px] text-neutral-400">Tap to upload receipt (JPG, PNG, WebP)</span>
+                                </>
+                              )}
+                            </label>
+                          </div>
+                        )}
+
+                        <p className="mt-2 text-[10px] text-neutral-500">
+                          💡 You can also place the order now and send the screenshot via WhatsApp.
+                        </p>
+                      </div>
+
+                      {pay.instructions && (
+                        <p className="border-t border-[#EADFD2] pt-2 text-xs text-neutral-600">
+                          {pay.instructions}
+                        </p>
+                      )}
                     </div>
                   )}
                   {!showCod && !showOnline && <p className="text-sm text-red-600">Ordering is paused right now. Please contact us on WhatsApp.</p>}
@@ -354,7 +588,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ modal = false }) => 
 
                 <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px] text-neutral-500">
                   <span className="flex flex-col items-center gap-1"><Lock className="h-4 w-4 text-[#7A4E30]" /> Secure</span>
-                  <span className="flex flex-col items-center gap-1"><RotateCcw className="h-4 w-4 text-[#7A4E30]" /> 30-day returns</span>
+                  <span className="flex flex-col items-center gap-1"><RotateCcw className="h-4 w-4 text-[#7A4E30]" /> Free Size Exchange</span>
                   <span className="flex flex-col items-center gap-1"><ShieldCheck className="h-4 w-4 text-[#7A4E30]" /> 100% original</span>
                 </div>
               </div>

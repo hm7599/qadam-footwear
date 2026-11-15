@@ -507,6 +507,7 @@ export const DataStore = {
       shippingMethod: orderData.shippingMethod || 'Complimentary Express Courier',
       paymentMethod: orderData.paymentMethod || 'card',
       paymentStatus,
+      paymentScreenshot: orderData.paymentScreenshot || '',
       orderStatus: initialStatus,
       source,
       trackingNumber: orderData.trackingNumber || '',

@@ -50,19 +50,41 @@ export const DEFAULT_PAYMENTS: PaymentSettings = {
   codEnabled: true,
   codNote: 'Pay in cash when your order arrives.',
   onlineEnabled: true,
-  bank: { enabled: true, bankName: '', accountTitle: '', accountNumber: '', iban: '' },
-  easypaisa: { enabled: false, accountTitle: '', number: '' },
+  bank: {
+    enabled: true,
+    bankName: 'Meezan Bank',
+    accountTitle: 'QADAM Footwear',
+    accountNumber: '02010108923412',
+    iban: 'PK45MEZN0002010108923412',
+  },
+  easypaisa: {
+    enabled: true,
+    accountTitle: 'QADAM Official',
+    number: '0300 8888000',
+  },
   jazzcash: { enabled: false, accountTitle: '', number: '' },
   raast: { enabled: false, raastId: '' },
-  instructions: 'After placing your order, send the payment screenshot with your order number on WhatsApp. We confirm and ship.',
+  instructions: 'Transfer the amount to the bank account or mobile wallet above. Upload your payment screenshot or send it via WhatsApp to confirm your order.',
 };
 
 export const normalizePayments = (raw: any): PaymentSettings => {
   const r = raw && typeof raw === 'object' ? raw : {};
   return {
     ...DEFAULT_PAYMENTS, ...r,
-    bank: { ...DEFAULT_PAYMENTS.bank, ...(r.bank || {}) },
-    easypaisa: { ...DEFAULT_PAYMENTS.easypaisa, ...(r.easypaisa || {}) },
+    bank: {
+      ...DEFAULT_PAYMENTS.bank,
+      ...(r.bank || {}),
+      bankName: r.bank?.bankName || DEFAULT_PAYMENTS.bank.bankName,
+      accountTitle: r.bank?.accountTitle || DEFAULT_PAYMENTS.bank.accountTitle,
+      accountNumber: r.bank?.accountNumber || DEFAULT_PAYMENTS.bank.accountNumber,
+      iban: r.bank?.iban || DEFAULT_PAYMENTS.bank.iban,
+    },
+    easypaisa: {
+      ...DEFAULT_PAYMENTS.easypaisa,
+      ...(r.easypaisa || {}),
+      accountTitle: r.easypaisa?.accountTitle || DEFAULT_PAYMENTS.easypaisa.accountTitle,
+      number: r.easypaisa?.number || DEFAULT_PAYMENTS.easypaisa.number,
+    },
     jazzcash: { ...DEFAULT_PAYMENTS.jazzcash, ...(r.jazzcash || {}) },
     raast: { ...DEFAULT_PAYMENTS.raast, ...(r.raast || {}) },
   };

@@ -203,6 +203,27 @@ export const EditOrderModal: React.FC<Props> = ({ order, onClose, onSaved, onDel
                 Method: {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online'}
               </span>
             </div>
+            {order.paymentScreenshot && (
+              <div className="mt-3 rounded-xl bg-amber-50/70 p-3 ring-1 ring-amber-200">
+                <p className="text-xs font-semibold text-amber-900 mb-2">Customer Payment Receipt Attached:</p>
+                <div className="flex items-center gap-3">
+                  <a href={order.paymentScreenshot} target="_blank" rel="noreferrer" className="block shrink-0">
+                    <img src={order.paymentScreenshot} alt="Payment Receipt" className="h-20 w-20 rounded-lg object-cover ring-1 ring-amber-300 hover:opacity-90" />
+                  </a>
+                  <div>
+                    <a
+                      href={order.paymentScreenshot}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-[#7A4E30] hover:underline"
+                    >
+                      Click to view full receipt ↗
+                    </a>
+                    <p className="mt-1 text-[11px] text-neutral-500">Submitted at checkout for verification.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Customer */}

@@ -15,8 +15,8 @@ const SECTIONS = [
   },
   {
     icon: RotateCcw,
-    title: 'Free 30-Day Returns',
-    text: 'You can return any unworn shoes within 30 days for free. Please keep them in the original box with all tags attached.',
+    title: 'Complimentary Size Exchange',
+    text: 'We offer complimentary doorstep size exchange for any unworn shoes. Please keep them in the original box with all tags attached.',
   },
   {
     icon: ShieldCheck,

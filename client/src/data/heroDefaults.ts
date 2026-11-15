@@ -58,7 +58,7 @@ export const DEFAULT_HERO: HeroContent = {
   stats: [
     { value: '198g', label: 'Super Light' },
     { value: '100%', label: 'Real Leather' },
-    { value: '30 Days', label: 'Easy Returns' },
+    { value: '100%', label: 'Free Size Exchange' },
     { value: '4.9★', label: 'Customer Rating' },
   ],
 };

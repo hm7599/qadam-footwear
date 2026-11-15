@@ -301,10 +301,16 @@ export const OrderTrackingPage: React.FC = () => {
                       <div className="rounded-2xl bg-[#FAF7F2] p-4">
                         <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Payment</p>
                         <p className="mt-1 text-sm font-semibold text-neutral-950">
-                          {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid online'}
+                          {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Paid online (IBFT)'}
                         </p>
                         <p className="mt-0.5 text-xs text-neutral-500">
-                          {order.paymentStatus === 'paid' ? 'Paid ✓' : `Please keep ${formatPrice(order.totalAmount)} ready`}
+                          {order.paymentStatus === 'paid'
+                            ? 'Paid ✓'
+                            : order.paymentScreenshot
+                            ? 'Receipt attached · Under verification'
+                            : order.paymentMethod === 'cod'
+                            ? `Please keep ${formatPrice(order.totalAmount)} ready`
+                            : 'Pending confirmation'}
                         </p>
                       </div>
                     </div>

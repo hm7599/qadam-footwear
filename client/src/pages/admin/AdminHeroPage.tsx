@@ -312,7 +312,7 @@ export const AdminHeroPage: React.FC = () => {
               <div className="mb-4 flex items-center justify-between">
                 <div>
                   <h2 className="font-semibold text-neutral-900">Bottom highlights bar</h2>
-                  <p className="text-xs text-neutral-500">Short facts shown under the banner (e.g. "30 Days – Easy Returns").</p>
+                  <p className="text-xs text-neutral-500">Short facts shown under the banner (e.g. "100% – Free Size Exchange").</p>
                 </div>
                 <button
                   onClick={() => setHero(h => ({ ...h, stats: [...h.stats, { value: '', label: '' }] }))}

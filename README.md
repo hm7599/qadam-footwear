@@ -61,7 +61,7 @@ A production-grade, ultra-luxury footwear e-commerce application for QADAM Men's
 15. **Size Guide (`/size-guide`)**: Interactive sizing conversion matrix (US, UK, EU, CM, Inches) and real-time foot length calculator with width recommendations.
 16. **Order Tracking (`/track-order`)**: Live order tracking by order number (e.g., `QDM-89214`) with interactive 5-step milestone timeline.
 17. **Privacy Policy (`/privacy`)**: Luxury atelier client privacy, data encryption, and GDPR/CCPA terms.
-18. **Terms & Conditions (`/terms`)**: 30-day white glove returns policy, warranty, and limited edition allocations.
+18. **Terms & Conditions (`/terms`)**: Complimentary doorstep size exchange policy, warranty, and limited edition allocations.
 
 ### Separate Admin Operations Portal (`/admin`):
 - **Overview Dashboard (`/admin`)**: Total sales revenue, total orders, active products, push subscriber count, monthly revenue growth chart, low-stock alerts, and recent orders.

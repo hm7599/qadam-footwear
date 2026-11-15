@@ -565,7 +565,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { icon: Truck, title: 'Free delivery', text: 'Cash on delivery' },
-                  { icon: RotateCcw, title: 'Easy returns', text: '30-day exchange' },
+                  { icon: RotateCcw, title: 'Size exchange', text: 'Doorstep swap' },
                   { icon: ShieldCheck, title: '100% original', text: 'Quality checked' },
                 ].map(({ icon: Icon, title, text }) => (
                   <div key={title} className="flex flex-col items-center gap-1 rounded-2xl bg-white p-3 text-center ring-1 ring-neutral-200/70">

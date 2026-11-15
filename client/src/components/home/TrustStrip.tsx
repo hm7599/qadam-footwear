@@ -4,7 +4,7 @@ import { Truck, Banknote, RotateCcw, ShieldCheck } from 'lucide-react';
 const ITEMS = [
   { icon: Truck, title: 'Free Delivery', text: 'All over Pakistan' },
   { icon: Banknote, title: 'Cash on Delivery', text: 'Pay when it arrives' },
-  { icon: RotateCcw, title: 'Easy Returns', text: '30 days, free size exchange' },
+  { icon: RotateCcw, title: 'Size Exchange', text: 'Doorstep size exchange' },
   { icon: ShieldCheck, title: '100% Original', text: 'Quality checked by hand' },
 ];
 

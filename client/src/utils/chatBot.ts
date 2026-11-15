@@ -109,7 +109,7 @@ export function botAnswer(input: string, products: Product[]): BotReply {
   // Returns
   if (has(q, ['return', 'exchange', 'refund', 'wapas', 'badal', 'change size', 'warranty', 'guarantee', 'defect', 'kharab'])) {
     return {
-      text: 'Easy returns: send back unworn shoes within 30 days in the original box with tags. Wrong size? We\'ll exchange it for the right one. Every pair also has a 2-year warranty against manufacturing defects.',
+      text: 'Free size exchange: exchange unworn shoes easily in the original box with tags. Wrong size? We will exchange it at your doorstep. Every pair also has a 2-year warranty against manufacturing defects.',
       actions: [{ kind: 'link', label: 'Read our terms', to: '/terms' }, ...HUMAN_ACTIONS.slice(0, 1)],
     };
   }

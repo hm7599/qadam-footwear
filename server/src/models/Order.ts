@@ -42,6 +42,7 @@ export interface IOrder extends Document {
   shippingMethod: string;
   paymentMethod: 'card' | 'apple_pay' | 'google_pay' | 'cod';
   paymentStatus: 'paid' | 'pending' | 'failed';
+  paymentScreenshot?: string;
   orderStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   source?: 'website' | 'whatsapp' | 'other';
   adminNote?: string;
@@ -97,6 +98,7 @@ const OrderSchema: Schema = new Schema(
       enum: ['paid', 'pending', 'failed'],
       default: 'paid'
     },
+    paymentScreenshot: { type: String, default: '' },
     orderStatus: {
       type: String,
       enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],

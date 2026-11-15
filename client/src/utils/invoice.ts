@@ -106,7 +106,7 @@ export function downloadInvoice(order: Order, formatPrice: (usd: number) => stri
 
     <div class="foot">
       Thank you for shopping with QADAM!<br>
-      Questions about your order? WhatsApp us or email support@qadamshoes.com · Easy 30-day returns on unworn shoes.
+      Questions about your order? WhatsApp us or email support@qadamshoes.com · Complimentary doorstep size exchange on unworn shoes.
     </div>
   </div>
   <div class="actions"><button onclick="window.print()">Download / Print PDF</button></div>

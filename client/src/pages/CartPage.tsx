@@ -180,7 +180,7 @@ export const CartPage: React.FC = () => {
             <div className="flex items-start gap-3 border-t border-neutral-200 pt-4">
               <ShieldCheck className="h-5 w-5 text-neutral-700 flex-shrink-0 mt-0.5" />
               <p className="font-tech text-[10px] text-neutral-500 uppercase leading-relaxed">
-                Safe, sealed delivery and free returns within 30 days.
+                Safe, sealed delivery and complimentary doorstep size exchange.
               </p>
             </div>
           </div>

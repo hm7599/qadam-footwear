@@ -66,6 +66,7 @@ router.post('/manual', protect, adminOnly, async (req: AuthenticatedRequest, res
       totalAmount: Math.max(0, subtotal + shippingCost - discount),
       paymentMethod: b.paymentMethod === 'cod' ? 'cod' : 'card',
       paymentStatus: b.paymentStatus,
+      paymentScreenshot: b.paymentScreenshot || '',
       shippingMethod: b.trackingCarrier || 'Courier',
       trackingCarrier: b.trackingCarrier || '',
       trackingNumber: b.trackingNumber || '',
@@ -83,7 +84,7 @@ router.post('/manual', protect, adminOnly, async (req: AuthenticatedRequest, res
 // Prices, coupon, delivery and totals are worked out on the server; the browser's numbers are ignored.
 router.post('/', async (req, res) => {
   try {
-    const { customer, items, couponCode, paymentMethod, shippingMethod, cartId } = req.body || {};
+    const { customer, items, couponCode, paymentMethod, shippingMethod, cartId, paymentScreenshot } = req.body || {};
     if (!customer || !customer.name || !customer.address || !Array.isArray(items) || !items.length) {
       return res.status(400).json({ success: false, message: 'Customer details and at least one item are required.' });
     }
@@ -104,7 +105,7 @@ router.post('/', async (req, res) => {
     if (paymentMethod === 'cod' ? !codOn : !onlineOn) {
       return res.status(400).json({ success: false, message: 'This payment method is not available right now. Please choose another one.' });
     }
-    const result = await placeWebsiteOrder({ customer, items, couponCode, paymentMethod, shippingMethod, cartId });
+    const result = await placeWebsiteOrder({ customer, items, couponCode, paymentMethod, shippingMethod, cartId, paymentScreenshot });
     if ('error' in result) return res.status(400).json({ success: false, message: result.error, code: result.code });
     const order = result.order;
 

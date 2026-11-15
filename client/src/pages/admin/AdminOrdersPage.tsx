@@ -3,7 +3,7 @@ import { AdminLayout } from '../../components/admin/AdminLayout';
 import { useCurrency } from '../../context/CurrencyContext';
 import { api } from '../../utils/api';
 import { Order } from '../../types';
-import { Check, X, Search, MessageCircle, Truck, PackageCheck, Clock, Loader2, ChevronRight, Settings2 } from 'lucide-react';
+import { Check, X, Search, MessageCircle, Truck, PackageCheck, Clock, Loader2, ChevronRight, Settings2, Receipt, Eye, ExternalLink } from 'lucide-react';
 import { ORDER_FLOW, STATUS_LABEL, STATUS_STYLE, ACTION_LABEL, OrderStatus, ORDER_SOURCES, sourceInfo, DELIVERY_OPTIONS, needsTracking } from '../../utils/orderStatus';
 import { AddOrderModal } from '../../components/admin/AddOrderModal';
 import { DEFAULT_WHATSAPP, WhatsAppSettings, normalizeWhatsApp, fillTemplate, whatsappLink, TEMPLATE_FOR_STATUS } from '../../utils/whatsapp';
@@ -48,6 +48,7 @@ export const AdminOrdersPage: React.FC = () => {
   const [addOpen, setAddOpen] = useState(false);
   const [sourceFilter, setSourceFilter] = useState('all');
   const [updating, setUpdating] = useState(false);
+  const [viewingReceipt, setViewingReceipt] = useState<{ screenshot: string; orderNumber: string } | null>(null);
 
   const loadOrders = async () => {
     setLoading(true);
@@ -261,6 +262,15 @@ export const AdminOrdersPage: React.FC = () => {
                       <p className="text-xs text-neutral-500">
                         {ord.items.reduce((n, i) => n + i.quantity, 0)} item(s) · {ord.paymentMethod === 'cod' ? 'COD' : 'Paid online'}
                       </p>
+                      {ord.paymentScreenshot && (
+                        <button
+                          type="button"
+                          onClick={() => setViewingReceipt({ screenshot: ord.paymentScreenshot!, orderNumber: ord.orderNumber })}
+                          className="mt-1.5 inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-900 ring-1 ring-amber-300 hover:bg-amber-100 transition-colors cursor-pointer"
+                        >
+                          <Receipt className="h-3 w-3 text-amber-700" /> View Receipt
+                        </button>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-[11px] font-medium uppercase tracking-wider text-neutral-400">Delivery</p>
@@ -392,6 +402,52 @@ export const AdminOrdersPage: React.FC = () => {
                 >
                   {updating && <Loader2 className="h-4 w-4 animate-spin" />}
                   {ACTION_LABEL[target]}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Receipt Modal */}
+        {viewingReceipt && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col rounded-2xl bg-white p-5 shadow-2xl">
+              <div className="mb-3 flex items-center justify-between border-b border-neutral-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-[#7A4E30]" />
+                  <h3 className="text-base font-bold text-neutral-900">Payment Receipt · {viewingReceipt.orderNumber}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setViewingReceipt(null)}
+                  className="rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-black cursor-pointer"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-auto rounded-xl bg-neutral-950 p-2 flex items-center justify-center min-h-[250px]">
+                <img
+                  src={viewingReceipt.screenshot}
+                  alt={`Receipt for ${viewingReceipt.orderNumber}`}
+                  className="max-h-[65vh] w-auto max-w-full rounded object-contain"
+                />
+              </div>
+
+              <div className="mt-4 flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={() => window.open(viewingReceipt.screenshot, '_blank')}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#7A4E30] hover:underline cursor-pointer"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" /> Open Full Resolution
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingReceipt(null)}
+                  className="rounded-lg bg-neutral-950 px-4 py-2 text-xs font-semibold text-white hover:bg-neutral-800 cursor-pointer"
+                >
+                  Done
                 </button>
               </div>
             </div>
