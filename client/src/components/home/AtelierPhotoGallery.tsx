@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
-import { useAuth } from '../../context/AuthContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
 import { isSoldOut } from '../shop/AlertForms';
 import { Product } from '../../types';
@@ -280,7 +279,6 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
 
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
-  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -612,22 +610,10 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                     className="max-h-[85%] max-w-[85%] object-contain filter drop-shadow-[0_12px_16px_rgba(0,0,0,0.12)] transition-transform duration-700 ease-out group-hover:scale-108"
                   />
 
-                  {/* Top-Right: Admin Direct Edit or Hover Inspect Pill */}
-                  {isAdmin ? (
-                    <Link
-                      to={`/admin/products?edit=${encodeURIComponent(item.product.id || item.slug)}`}
-                      onClick={e => e.stopPropagation()}
-                      title="Edit this product in Admin Panel"
-                      className="absolute top-3 right-3 z-20 inline-flex items-center gap-1 rounded-full bg-neutral-950 text-white px-2.5 py-1 text-[10px] font-bold shadow-md hover:bg-neutral-800 transition-all cursor-pointer border border-neutral-700 hover:scale-105"
-                    >
-                      <Edit className="h-3 w-3 text-amber-400" />
-                      <span>Edit</span>
-                    </Link>
-                  ) : (
-                    <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/85 text-white p-2 rounded-full shadow-md">
-                      <Eye className="h-3.5 w-3.5" />
-                    </div>
-                  )}
+                  {/* Top-Right: Hover Inspect Pill */}
+                  <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity bg-black/85 text-white p-2 rounded-full shadow-md">
+                    <Eye className="h-3.5 w-3.5" />
+                  </div>
 
                   {/* Top-Left Edition Tag */}
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 flex-wrap max-w-[80%]">
@@ -891,16 +877,6 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   >
                     View full details <ArrowUpRight className="h-3 w-3" />
                   </Link>
-                  {isAdmin && (
-                    <Link
-                      to={`/admin/products?edit=${encodeURIComponent(product.id || product.slug)}`}
-                      onClick={() => setActiveItem(null)}
-                      className="flex items-center justify-center gap-1.5 pt-1 text-xs font-semibold text-amber-800 hover:text-black cursor-pointer"
-                    >
-                      <Edit className="h-3.5 w-3.5 text-amber-600" />
-                      <span>Edit this shoe in Admin Panel</span>
-                    </Link>
-                  )}
                 </div>
               </div>
             </motion.div>
