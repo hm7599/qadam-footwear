@@ -212,6 +212,30 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                   ))}
                 </div>
               </div>
+
+              {/* Material Highlights */}
+              {(product.specs?.upperMaterial || product.specs?.soleMaterial || product.specs?.innerLining) && (
+                <div className="flex flex-wrap items-center gap-1.5 py-1 text-[10px] font-tech text-neutral-600">
+                  {product.specs?.upperMaterial && (
+                    <span className="inline-flex items-center gap-1 rounded bg-[#FAF8F5] px-2 py-0.5 border border-neutral-200">
+                      <span className="text-neutral-400 font-normal">Upper:</span>
+                      <strong className="font-semibold text-neutral-900">{product.specs.upperMaterial}</strong>
+                    </span>
+                  )}
+                  {product.specs?.innerLining && (
+                    <span className="inline-flex items-center gap-1 rounded bg-[#FAF8F5] px-2 py-0.5 border border-neutral-200">
+                      <span className="text-neutral-400 font-normal">Lining:</span>
+                      <strong className="font-semibold text-neutral-900">{product.specs.innerLining}</strong>
+                    </span>
+                  )}
+                  {product.specs?.soleMaterial && (
+                    <span className="inline-flex items-center gap-1 rounded bg-[#FAF8F5] px-2 py-0.5 border border-neutral-200">
+                      <span className="text-neutral-400 font-normal">Sole:</span>
+                      <strong className="font-semibold text-neutral-900">{product.specs.soleMaterial}</strong>
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Action buttons */}

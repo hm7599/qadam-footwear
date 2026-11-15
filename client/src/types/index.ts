@@ -5,6 +5,8 @@ export interface ProductSpec {
   soleMaterial: string;
   heelDrop: string;
   fit: string;
+  innerLining?: string;
+  innerSock?: string;
 }
 
 export interface ColorVariant {

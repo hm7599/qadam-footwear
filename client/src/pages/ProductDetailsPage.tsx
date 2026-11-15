@@ -152,6 +152,72 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
   const price = product.salePrice || product.price;
   const soldOut = !!selectedSize && isSoldOut(product, selectedSize);
 
+  const parsedSpecsAndStory = React.useMemo(() => {
+    if (!product) return { lead: '', narrative: '', specItems: [] };
+
+    const rawDesc = (product.description || '').trim();
+    const specMap: Record<string, string> = {};
+
+    // 1. Prepopulate from product.specs
+    if (product.specs) {
+      if (product.specs.upperMaterial) specMap['Upper Material'] = product.specs.upperMaterial;
+      if (product.specs.innerLining) specMap['Inner Lining'] = product.specs.innerLining;
+      if (product.specs.innerSock) specMap['Inner Sock'] = product.specs.innerSock;
+      if (product.specs.soleMaterial) specMap['Sole'] = product.specs.soleMaterial;
+      if (product.specs.cushioning) specMap['Insole & Lining'] = product.specs.cushioning;
+      if (product.specs.weight) specMap['Weight'] = product.specs.weight;
+      if (product.specs.heelDrop) specMap['Heel Height'] = product.specs.heelDrop;
+      if (product.specs.fit) specMap['Fit'] = product.specs.fit;
+    }
+
+    // 2. Parse bullet specifications from description
+    const lines = rawDesc.split(/\r?\n/);
+    const narrativeLines: string[] = [];
+    let inSpecsBlock = false;
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) {
+        if (!inSpecsBlock) narrativeLines.push('');
+        continue;
+      }
+
+      if (/^specifications:?$/i.test(line)) {
+        inSpecsBlock = true;
+        continue;
+      }
+
+      const match = line.match(/^[-*•]?\s*([A-Za-z\s/&]+):\s*(.+)$/);
+      if (match) {
+        const rawKey = match[1].trim();
+        const val = match[2].trim();
+        const norm = rawKey.toLowerCase();
+        if (norm.includes('upper')) specMap['Upper Material'] = val;
+        else if (norm.includes('lining')) specMap['Inner Lining'] = val;
+        else if (norm.includes('sock')) specMap['Inner Sock'] = val;
+        else if (norm.includes('sole')) specMap['Sole'] = val;
+        else if (norm.includes('weight')) specMap['Weight'] = val;
+        else if (norm.includes('heel')) specMap['Heel Height'] = val;
+        else if (norm.includes('fit')) specMap['Fit'] = val;
+        else specMap[rawKey] = val;
+        continue;
+      }
+
+      if (!inSpecsBlock) {
+        narrativeLines.push(rawLine);
+      }
+    }
+
+    const narrative = narrativeLines.join('\n').trim();
+    const specItems = Object.entries(specMap).filter(([_, v]) => Boolean(v && v.trim()));
+
+    return {
+      lead: product.tagline || '',
+      narrative: narrative || rawDesc,
+      specItems,
+    };
+  }, [product]);
+
   const handleAddToCart = (e?: React.MouseEvent<HTMLElement>) => {
     if (!selectedSize) {
       setSizeError(true);
@@ -533,19 +599,93 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
           </div>
 
           {activeTab === 'specs' && (
-            <div className="max-w-3xl space-y-4 font-sans">
-              {product.tagline && (
-                <p className="text-base sm:text-lg font-medium text-neutral-900">
-                  {product.tagline}
-                </p>
+            <div className="max-w-4xl space-y-8 font-sans">
+              {/* Editorial Lead Quote */}
+              {parsedSpecsAndStory.lead && (
+                <div className="rounded-2xl border-l-4 border-[#C9A46A] bg-gradient-to-r from-[#FAF8F5] via-[#F6F2EC] to-white p-5 sm:p-6 shadow-2xs">
+                  <p style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', serif" }} className="text-lg sm:text-xl italic text-[#3B2618] leading-relaxed">
+                    &ldquo;{parsedSpecsAndStory.lead}&rdquo;
+                  </p>
+                </div>
               )}
-              {product.description ? (
-                <p className="text-sm sm:text-base leading-relaxed text-neutral-600 whitespace-pre-line">
-                  {product.description}
-                </p>
-              ) : (
-                <p className="text-sm text-neutral-400 italic">No description provided for this product.</p>
+
+              {/* Narrative Story */}
+              {parsedSpecsAndStory.narrative && (
+                <div className="space-y-3">
+                  <h4 className="font-tech text-xs uppercase tracking-[0.2em] font-bold text-neutral-900">
+                    Artisanal Heritage & Profile
+                  </h4>
+                  <p className="text-sm sm:text-base leading-relaxed text-neutral-700 font-normal whitespace-pre-line">
+                    {parsedSpecsAndStory.narrative}
+                  </p>
+                </div>
               )}
+
+              {/* Structured Specifications Grid */}
+              {parsedSpecsAndStory.specItems.length > 0 && (
+                <div className="rounded-2xl border border-neutral-200/80 bg-[#FCFBF9] p-6 sm:p-8 shadow-sm">
+                  <div className="flex items-center gap-2 pb-4 mb-6 border-b border-neutral-200">
+                    <Layers className="h-4 w-4 text-[#A8824C]" />
+                    <h4 className="font-tech text-xs uppercase tracking-[0.25em] font-bold text-neutral-900">
+                      Material & Craftsmanship Specifications
+                    </h4>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                    {parsedSpecsAndStory.specItems.map(([key, val]) => (
+                      <div
+                        key={key}
+                        className="flex items-start justify-between gap-4 rounded-xl border border-neutral-200/70 bg-white p-4 transition-all hover:border-[#C9A46A]/60 hover:shadow-xs"
+                      >
+                        <div>
+                          <span className="font-tech text-[10px] uppercase tracking-wider text-neutral-400 block font-semibold mb-0.5">
+                            {key}
+                          </span>
+                          <span className="text-sm font-semibold text-neutral-900 block">
+                            {val}
+                          </span>
+                        </div>
+                        <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FAF5EE] text-[#A8824C] border border-[#E8DEC8]">
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 3 Luxury Craftsmanship Pillars */}
+              <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-3">
+                <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
+                  <div className="flex items-center gap-2 mb-1.5 text-neutral-950 font-semibold text-xs">
+                    <ShieldCheck className="h-4 w-4 text-[#A8824C]" />
+                    <span>Full Cow Finish Leather</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-neutral-500">
+                    Upper, inner lining, and footbed sock crafted from matching fine cow finish leather for lasting breathability and softness.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
+                  <div className="flex items-center gap-2 mb-1.5 text-neutral-950 font-semibold text-xs">
+                    <Layers className="h-4 w-4 text-[#A8824C]" />
+                    <span>Genuine Leather Sole</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-neutral-500">
+                    Finished with an authentic, durable leather sole providing natural flexibility, firm ground feel, and signature prestige.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-neutral-200/70 bg-white p-4">
+                  <div className="flex items-center gap-2 mb-1.5 text-neutral-950 font-semibold text-xs">
+                    <Sparkles className="h-4 w-4 text-[#A8824C]" />
+                    <span>Handcrafted Elegance</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-neutral-500">
+                    Carefully hand-shaped and finished by master artisans for a timeless silhouette suitable for all formal & evening occasions.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

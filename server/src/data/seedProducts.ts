@@ -5,6 +5,8 @@ export interface ProductItemSpec {
   soleMaterial: string;
   heelDrop: string;
   fit: string;
+  innerLining?: string;
+  innerSock?: string;
 }
 
 export interface ColorVariant {
@@ -59,6 +61,90 @@ export interface Product {
 export type ProductItem = Product;
 
 export const SEED_PRODUCTS: ProductItem[] = [
+  {
+    "_id": "prod-qadam-bos-0032-two-tone",
+    "id": "prod-qadam-bos-0032-two-tone",
+    "name": "QADAM BOS 0032 Two Tone Leather Shoe",
+    "slug": "qadam-bos-0032-two-tone",
+    "tagline": "Premium two-tone leather shoes crafted with quality materials for a refined and elegant look.",
+    "edition": "Handcrafted Two-Tone",
+    "brand": "QADAM",
+    "price": 420,
+    "salePrice": 365,
+    "category": "formals",
+    "gender": "men",
+    "description": "The BOS 0032 Two Tone shoes feature a premium cow finish leather upper, offering a sophisticated two-tone appearance with a timeless style. The inner lining and sock are also made from cow finish leather for a comfortable and quality feel. Finished with a genuine leather sole, these shoes combine classic elegance with refined craftsmanship.\n\nSpecifications:\n- Upper Material: Cow Finish Leather\n- Inner Lining: Cow Finish Leather\n- Inner Sock: Cow Finish Leather\n- Sole: Leather",
+    "specs": {
+      "upperMaterial": "Cow Finish Leather",
+      "cushioning": "Cow Finish Leather Lining & Sock",
+      "soleMaterial": "Genuine Leather Sole",
+      "innerLining": "Cow Finish Leather",
+      "innerSock": "Cow Finish Leather",
+      "weight": "385g (Size 42)",
+      "heelDrop": "2.2 cm leather heel",
+      "fit": "True to size (regular width)"
+    },
+    "colors": [
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/formal-brogue-cognac.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Black",
+        "hex": "#111111",
+        "previewImage": "/images/shoes/qadam-oxford-derby-black.png",
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/featured/burgundy-loafer.png",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/formal-brogue-cognac.jpg",
+        "modelTint": "#FFFFFF"
+      }
+    ],
+    "sizes": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ],
+    "stock": 28,
+    "images": [
+      "/images/shoes/formal-brogue-cognac.jpg",
+      "/images/shoes/formal-italian-loafers.png",
+      "/images/atelier/formal_patina_set4_1.jpg"
+    ],
+    "rating": 4.96,
+    "reviewCount": 84,
+    "isNewArrival": true,
+    "isBestSeller": true,
+    "isTrending": true,
+    "isLimitedEdition": false,
+    "isAtelierFeatured": true,
+    "reviews": [
+      {
+        "id": "rev-bos-1",
+        "author": "Hamza K.",
+        "rating": 5,
+        "date": "2026-11-10",
+        "title": "Incredible cow finish leather quality",
+        "comment": "The two-tone finish is stunning in person. Cow finish leather lining feels super comfortable even after all-day wear.",
+        "verified": true
+      }
+    ],
+    "createdAt": "2026-11-15T12:00:00.000Z"
+  },
   {
     "_id": "prod-aura-phantom-01",
     "id": "prod-aura-phantom-01",

@@ -50,6 +50,8 @@ interface FormState {
   // optional extra details
   weight: string;
   upperMaterial: string;
+  innerLining: string;
+  innerSock: string;
   soleMaterial: string;
   cushioning: string;
   heelDrop: string;
@@ -80,6 +82,8 @@ const EMPTY_FORM: FormState = {
   isAtelierFeatured: false,
   weight: '',
   upperMaterial: '',
+  innerLining: '',
+  innerSock: '',
   soleMaterial: '',
   cushioning: '',
   heelDrop: '',
@@ -241,6 +245,8 @@ export const AdminProductsPage: React.FC = () => {
       isAtelierFeatured: !!p.isAtelierFeatured,
       weight: p.specs?.weight || '',
       upperMaterial: p.specs?.upperMaterial || '',
+      innerLining: p.specs?.innerLining || '',
+      innerSock: p.specs?.innerSock || '',
       soleMaterial: p.specs?.soleMaterial || '',
       cushioning: p.specs?.cushioning || '',
       heelDrop: p.specs?.heelDrop || '',
@@ -317,6 +323,8 @@ export const AdminProductsPage: React.FC = () => {
         weight: form.weight,
         cushioning: form.cushioning,
         upperMaterial: form.upperMaterial,
+        innerLining: form.innerLining,
+        innerSock: form.innerSock,
         soleMaterial: form.soleMaterial,
         heelDrop: form.heelDrop,
         fit: 'True to size',
@@ -880,11 +888,13 @@ export const AdminProductsPage: React.FC = () => {
                   </button>
                   {showMore && (
                     <div className="grid grid-cols-1 gap-4 px-4 pb-4 sm:grid-cols-2">
-                      <Field label="Upper material"><input value={form.upperMaterial} onChange={e => set('upperMaterial', e.target.value)} placeholder="Genuine leather" className={inputCls} /></Field>
-                      <Field label="Sole"><input value={form.soleMaterial} onChange={e => set('soleMaterial', e.target.value)} placeholder="Rubber" className={inputCls} /></Field>
-                      <Field label="Inside / cushioning"><input value={form.cushioning} onChange={e => set('cushioning', e.target.value)} placeholder="Soft foam insole" className={inputCls} /></Field>
-                      <Field label="Weight"><input value={form.weight} onChange={e => set('weight', e.target.value)} placeholder="350g" className={inputCls} /></Field>
-                      <Field label="Heel height"><input value={form.heelDrop} onChange={e => set('heelDrop', e.target.value)} placeholder="2 cm" className={inputCls} /></Field>
+                      <Field label="Upper material"><input value={form.upperMaterial} onChange={e => set('upperMaterial', e.target.value)} placeholder="Cow finish leather" className={inputCls} /></Field>
+                      <Field label="Inner lining"><input value={form.innerLining} onChange={e => set('innerLining', e.target.value)} placeholder="Cow finish leather" className={inputCls} /></Field>
+                      <Field label="Inner sock / insole"><input value={form.innerSock} onChange={e => set('innerSock', e.target.value)} placeholder="Cow finish leather" className={inputCls} /></Field>
+                      <Field label="Sole"><input value={form.soleMaterial} onChange={e => set('soleMaterial', e.target.value)} placeholder="Genuine leather sole" className={inputCls} /></Field>
+                      <Field label="Inside / cushioning"><input value={form.cushioning} onChange={e => set('cushioning', e.target.value)} placeholder="Soft leather insole" className={inputCls} /></Field>
+                      <Field label="Weight"><input value={form.weight} onChange={e => set('weight', e.target.value)} placeholder="385g" className={inputCls} /></Field>
+                      <Field label="Heel height"><input value={form.heelDrop} onChange={e => set('heelDrop', e.target.value)} placeholder="2.2 cm" className={inputCls} /></Field>
                     </div>
                   )}
                 </section>
