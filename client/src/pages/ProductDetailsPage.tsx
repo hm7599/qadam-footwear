@@ -12,11 +12,12 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCompare } from '../context/CompareContext';
 import { useCurrency } from '../context/CurrencyContext';
+import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/shop/ProductCard';
 import {
   Heart, ShoppingBag, Truck, RotateCcw, ShieldCheck, Layers,
   ChevronLeft, ChevronRight, ZoomIn, X, Check, Star, Camera,
-  Ruler, Sparkles, HelpCircle, ArrowRight
+  Ruler, Sparkles, HelpCircle, ArrowRight, Edit
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,6 +53,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCompare, isInCompare } = useCompare();
   const { formatPrice, convertPrice } = useCurrency();
+  const { isAdmin } = useAuth();
   const [qty, setQty] = useState(1);
   const [recent, setRecent] = useState<string[]>([]);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -404,9 +406,21 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
             <div className="space-y-6 lg:sticky lg:top-28">
               {/* Category + rating */}
               <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full bg-[#F3E6D8] px-3 py-1 text-[11px] font-semibold capitalize text-[#7A4E30]">
-                  {product.category.replace('-', ' ')}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-[#F3E6D8] px-3 py-1 text-[11px] font-semibold capitalize text-[#7A4E30]">
+                    {product.category.replace('-', ' ')}
+                  </span>
+                  {isAdmin && (
+                    <Link
+                      to={`/admin/products?edit=${encodeURIComponent(product.id || product.slug)}`}
+                      className="inline-flex items-center gap-1 rounded-full bg-neutral-900 text-white px-2.5 py-0.5 text-[11px] font-bold hover:bg-neutral-800 shadow-xs transition-all"
+                      title="Edit this product in Admin Panel"
+                    >
+                      <Edit className="h-3 w-3 text-amber-400" />
+                      <span>Edit in Admin</span>
+                    </Link>
+                  )}
+                </div>
                 <a href="#reviews" className="flex items-center gap-1.5 text-sm text-neutral-600 hover:text-black">
                   <span className="flex">
                     {[...Array(5)].map((_, i) => (

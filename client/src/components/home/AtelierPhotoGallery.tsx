@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
 import { isSoldOut } from '../shop/AlertForms';
 import { Product } from '../../types';
@@ -279,6 +280,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
 
   const { addToCart, setIsCartOpen, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -877,6 +879,16 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                   >
                     View full details <ArrowUpRight className="h-3 w-3" />
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      to={`/admin/products?edit=${encodeURIComponent(product.id || product.slug)}`}
+                      onClick={() => setActiveItem(null)}
+                      className="flex items-center justify-center gap-1.5 pt-2 text-xs font-semibold text-amber-800 hover:text-black cursor-pointer border-t border-neutral-100 mt-2"
+                    >
+                      <Edit className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Edit this shoe in Admin Panel &rarr;</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </motion.div>
