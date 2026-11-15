@@ -3,6 +3,7 @@ import { Product } from '../models/Product.js';
 import { User } from '../models/User.js';
 import { Order } from '../models/Order.js';
 import { SEED_PRODUCTS } from '../data/seedProducts.js';
+import { loadJsonArray, DELETED_PRODUCTS_FILE } from './store.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
@@ -34,14 +35,31 @@ export async function connectDB() {
 
 async function seedInitialData() {
   try {
+    const deletedList = loadJsonArray<string>(DELETED_PRODUCTS_FILE, []);
+    // Purge any products from Mongo that are in the deleted list
+    if (deletedList.length > 0) {
+      await Product.deleteMany({
+        $or: [
+          { id: { $in: deletedList } },
+          { slug: { $in: deletedList } }
+        ]
+      });
+    }
+
+    const availableSeeds = SEED_PRODUCTS.filter(
+      (sp: any) => !deletedList.includes(sp.id) && !deletedList.includes(sp.slug)
+    );
+
     const productCount = await Product.countDocuments();
     if (productCount === 0) {
-      console.log('[Database] Seeding initial luxury products into MongoDB...');
-      await Product.insertMany(SEED_PRODUCTS.map(({ _id, ...p }: any) => p));
-      console.log(`✅ [Database] Seeded ${SEED_PRODUCTS.length} products.`);
+      if (availableSeeds.length > 0) {
+        console.log('[Database] Seeding initial luxury products into MongoDB...');
+        await Product.insertMany(availableSeeds.map(({ _id, ...p }: any) => p));
+        console.log(`✅ [Database] Seeded ${availableSeeds.length} products.`);
+      }
     } else {
-      // Sync seed products: ensure any missing seed products are inserted without overwriting admin edits
-      for (const sp of SEED_PRODUCTS) {
+      // Sync seed products: ensure any missing seed products are inserted without overwriting admin edits or resurrecting deleted products
+      for (const sp of availableSeeds) {
         const exists = await Product.findOne({ $or: [{ id: sp.id }, { slug: sp.slug }] });
         if (!exists) {
           const { _id, ...toInsert }: any = sp;

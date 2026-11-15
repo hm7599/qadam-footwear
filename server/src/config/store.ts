@@ -15,9 +15,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = process.env.QADAM_DATA_DIR || process.env.AURA_DATA_DIR || path.resolve(__dirname, '../../data');
 const SUBS_FILE = path.join(DATA_DIR, 'notification-subscribers.json');
 const LOGS_FILE = path.join(DATA_DIR, 'notification-logs.json');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const DELETED_PRODUCTS_FILE = path.join(DATA_DIR, 'deleted-products.json');
+const ORDERS_FILE = path.join(DATA_DIR, 'orders.json');
 let diskWriteChain: Promise<void> = Promise.resolve();
 
-function loadJsonArray<T>(file: string, fallback: T[] = []): T[] {
+export function loadJsonArray<T>(file: string, fallback: T[] = []): T[] {
   try {
     const raw = fs.readFileSync(file, 'utf-8');
     const parsed = JSON.parse(raw);
@@ -27,7 +30,7 @@ function loadJsonArray<T>(file: string, fallback: T[] = []): T[] {
   }
 }
 
-function persistJsonArray(file: string, data: any[]) {
+export function persistJsonArray(file: string, data: any[]) {
   const payload = JSON.stringify(data, null, 2);
   diskWriteChain = diskWriteChain.then(() => {
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -37,9 +40,24 @@ function persistJsonArray(file: string, data: any[]) {
   }).catch(e => console.warn('[DataStore] save failed:', e?.message || e));
 }
 
-// Fallback in-memory state
-let memoryProducts: any[] = JSON.parse(JSON.stringify(SEED_PRODUCTS));
-let memoryOrders: any[] = [
+export { PRODUCTS_FILE, DELETED_PRODUCTS_FILE, ORDERS_FILE, DATA_DIR };
+
+// Permanently track admin-deleted products so they are NEVER resurrected on reboot or re-seed
+let memoryDeletedProducts: string[] = loadJsonArray<string>(DELETED_PRODUCTS_FILE, []);
+
+function initProducts(): any[] {
+  const existing = loadJsonArray<any>(PRODUCTS_FILE, []);
+  if (existing && existing.length > 0) {
+    return existing.filter(p => !memoryDeletedProducts.includes(p.id) && !memoryDeletedProducts.includes(p.slug) && !memoryDeletedProducts.includes(String(p._id)));
+  }
+  const initial = (SEED_PRODUCTS as any[]).filter(p => !memoryDeletedProducts.includes(p.id) && !memoryDeletedProducts.includes(p.slug));
+  persistJsonArray(PRODUCTS_FILE, initial);
+  return initial;
+}
+
+// Persistent fallback product state
+let memoryProducts: any[] = initProducts();
+let memoryOrders: any[] = loadJsonArray<any>(ORDERS_FILE, [
   {
     _id: "order-sample-1",
     orderNumber: "QDM-89214",
@@ -84,7 +102,7 @@ let memoryOrders: any[] = [
     estimatedDeliveryDate: new Date(Date.now() + 86400000 * 2).toISOString(),
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
   }
-];
+]);
 
 // Admin password comes from ADMIN_PASSWORD in .env (never hard-coded). Without it a random one is used.
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 10
@@ -204,9 +222,19 @@ export const DataStore = {
     // Make sure the slug is unique (bulk uploads can contain similar names)
     const base = productData.slug;
     for (let n = 2; await this.getProductByIdOrSlug(productData.slug); n++) productData.slug = `${base}-${n}`;
+    // If this product was previously deleted, remove it from memoryDeletedProducts
+    if (memoryDeletedProducts.includes(productData.id) || memoryDeletedProducts.includes(productData.slug)) {
+      memoryDeletedProducts = memoryDeletedProducts.filter(x => x !== productData.id && x !== productData.slug);
+      persistJsonArray(DELETED_PRODUCTS_FILE, memoryDeletedProducts);
+    }
+
     if (isMongoConnected) {
       try {
-        return await Product.create(productData);
+        const created = await Product.create(productData);
+        const plain = created.toObject ? created.toObject() : created;
+        memoryProducts.unshift(plain);
+        persistJsonArray(PRODUCTS_FILE, memoryProducts);
+        return created;
       } catch (e: any) {
         console.error('Mongo createProduct error:', e);
         throw new Error(e.message || 'Database error while creating product.');
@@ -221,6 +249,7 @@ export const DataStore = {
       createdAt: new Date().toISOString()
     };
     memoryProducts.unshift(newProd);
+    persistJsonArray(PRODUCTS_FILE, memoryProducts);
     return newProd;
   },
 
@@ -229,11 +258,19 @@ export const DataStore = {
     if (updates) { updates = { ...updates }; delete updates.wishlistCount; }
     if (isMongoConnected) {
       try {
-        return await Product.findOneAndUpdate(
+        const updated = await Product.findOneAndUpdate(
           { $or: [{ _id: id }, { id }, { slug: id }] },
           { $set: updates },
           { new: true }
         );
+        if (updated) {
+          const plain = updated.toObject ? updated.toObject() : updated;
+          const idx = memoryProducts.findIndex(p => p.id === id || p._id === id || p.slug === id);
+          if (idx !== -1) memoryProducts[idx] = plain;
+          else memoryProducts.unshift(plain);
+          persistJsonArray(PRODUCTS_FILE, memoryProducts);
+          return updated;
+        }
       } catch (e) {
         console.warn('Mongo updateProduct fallback:', e);
       }
@@ -241,6 +278,7 @@ export const DataStore = {
     const index = memoryProducts.findIndex(p => p.id === id || p._id === id || p.slug === id);
     if (index !== -1) {
       memoryProducts[index] = { ...memoryProducts[index], ...updates, updatedAt: new Date().toISOString() };
+      persistJsonArray(PRODUCTS_FILE, memoryProducts);
       return memoryProducts[index];
     }
     return null;
@@ -260,22 +298,45 @@ export const DataStore = {
       }
     }
     const p = memoryProducts.find(x => x.id === id || x._id === id || x.slug === id);
-    if (p) p.wishlistCount = Math.max(0, (Number(p.wishlistCount) || 0) + delta);
+    if (p) {
+      p.wishlistCount = Math.max(0, (Number(p.wishlistCount) || 0) + delta);
+      persistJsonArray(PRODUCTS_FILE, memoryProducts);
+    }
     return !!p;
   },
 
   async deleteProduct(id: string) {
+    // 1. Permanently track in deleted-products.json so this product is NEVER resurrected on reboot or re-seed
+    const target = memoryProducts.find(p => p.id === id || p._id === id || p.slug === id);
+    const identifiers = [id];
+    if (target?.id) identifiers.push(target.id);
+    if (target?.slug) identifiers.push(target.slug);
+    if (target?._id) identifiers.push(String(target._id));
+
+    let changed = false;
+    for (const item of identifiers) {
+      if (item && !memoryDeletedProducts.includes(item)) {
+        memoryDeletedProducts.push(item);
+        changed = true;
+      }
+    }
+    if (changed) {
+      persistJsonArray(DELETED_PRODUCTS_FILE, memoryDeletedProducts);
+    }
+
     if (isMongoConnected) {
       try {
-        await Product.findOneAndDelete({ $or: [{ _id: id }, { id }, { slug: id }] });
-        return true;
+        const or: any[] = [{ id }, { slug: id }];
+        if (/^[0-9a-fA-F]{24}$/.test(id)) or.push({ _id: id });
+        await Product.deleteMany({ $or: or });
       } catch (e) {
         console.warn('Mongo deleteProduct fallback:', e);
       }
     }
     const beforeLen = memoryProducts.length;
     memoryProducts = memoryProducts.filter(p => p.id !== id && p._id !== id && p.slug !== id);
-    return memoryProducts.length < beforeLen;
+    persistJsonArray(PRODUCTS_FILE, memoryProducts);
+    return memoryProducts.length < beforeLen || changed;
   },
 
   async addReview(productId: string, review: any) {
@@ -312,6 +373,7 @@ export const DataStore = {
       prod.reviewCount = prod.reviews.length;
       const sum = prod.reviews.reduce((acc: number, r: any) => acc + r.rating, 0);
       prod.rating = Number((sum / prod.reviews.length).toFixed(1));
+      persistJsonArray(PRODUCTS_FILE, memoryProducts);
       return prod;
     }
     return null;
@@ -366,6 +428,7 @@ export const DataStore = {
       if (typeof ord.markModified === 'function') ord.markModified('customer');
       await ord.save();
     }
+    persistJsonArray(ORDERS_FILE, memoryOrders);
     return ord;
   },
 
@@ -382,6 +445,7 @@ export const DataStore = {
     }
     const idx = memoryOrders.findIndex(o => o.orderNumber?.toUpperCase() === cleanNum || o._id === orderNumber);
     if (idx !== -1) { memoryOrders.splice(idx, 1); deleted = true; }
+    persistJsonArray(ORDERS_FILE, memoryOrders);
     return deleted;
   },
 
@@ -437,7 +501,11 @@ export const DataStore = {
 
     if (isMongoConnected) {
       try {
-        return await Order.create(newOrder);
+        const created = await Order.create(newOrder);
+        const plain = created.toObject ? created.toObject() : created;
+        memoryOrders.unshift(plain);
+        persistJsonArray(ORDERS_FILE, memoryOrders);
+        return created;
       } catch (e) {
         console.warn('Mongo createOrder fallback:', e);
       }
@@ -445,6 +513,7 @@ export const DataStore = {
 
     const savedOrder = { _id: 'order-' + Date.now(), ...newOrder };
     memoryOrders.unshift(savedOrder);
+    persistJsonArray(ORDERS_FILE, memoryOrders);
     return savedOrder;
   },
 
@@ -462,6 +531,7 @@ export const DataStore = {
             note: note || `Order status updated to ${status}`
           });
           await ord.save();
+          persistJsonArray(ORDERS_FILE, memoryOrders);
           return ord;
         }
       } catch (e) {
@@ -480,6 +550,7 @@ export const DataStore = {
         timestamp: new Date().toISOString(),
         note: note || `Order status updated to ${status}`
       });
+      persistJsonArray(ORDERS_FILE, memoryOrders);
       return ord;
     }
     return null;

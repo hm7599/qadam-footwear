@@ -174,14 +174,28 @@ const LayoutShell: React.FC<{ products: Product[] }> = ({ products }) => {
   );
 };
 
+const getLocalDeletedIds = (): string[] => {
+  try {
+    return JSON.parse(localStorage.getItem('qadam_deleted_products') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const filterNotDeleted = (list: Product[]): Product[] => {
+  const deleted = getLocalDeletedIds();
+  if (!deleted.length) return list;
+  return list.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || ''));
+};
+
 export default function App() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => filterNotDeleted(INITIAL_PRODUCTS));
 
   useEffect(() => {
     async function loadInitialProducts() {
       try {
         const list = await api.getProducts();
-        setProducts(list);
+        setProducts(filterNotDeleted(list));
       } catch (err) {
         console.warn('Failed to fetch initial products:', err);
       }

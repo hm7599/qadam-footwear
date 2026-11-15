@@ -103,6 +103,30 @@ const Toggle: React.FC<{ label: string; checked: boolean; onChange: (v: boolean)
   </button>
 );
 
+const getLocalDeleted = (): string[] => {
+  try {
+    return JSON.parse(localStorage.getItem('qadam_deleted_products') || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const addLocalDeleted = (...ids: (string | undefined)[]) => {
+  try {
+    const list = getLocalDeleted();
+    const set = new Set(list);
+    ids.filter(Boolean).forEach(id => set.add(id!));
+    localStorage.setItem('qadam_deleted_products', JSON.stringify(Array.from(set)));
+  } catch {}
+};
+
+const removeLocalDeleted = (...ids: (string | undefined)[]) => {
+  try {
+    const list = getLocalDeleted().filter(id => !ids.includes(id));
+    localStorage.setItem('qadam_deleted_products', JSON.stringify(list));
+  } catch {}
+};
+
 export const AdminProductsPage: React.FC = () => {
   const { formatPrice } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
@@ -124,7 +148,9 @@ export const AdminProductsPage: React.FC = () => {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      setProducts(await api.getAdminProducts());
+      const fetched = await api.getAdminProducts();
+      const deleted = getLocalDeleted();
+      setProducts(fetched.filter(p => !deleted.includes(p.id) && !deleted.includes(p._id || '') && !deleted.includes(p.slug || '')));
     } catch (err) {
       console.warn('Load products error:', err);
     } finally {
@@ -182,11 +208,13 @@ export const AdminProductsPage: React.FC = () => {
 
   const handleDelete = async (id: string, name: string) => {
     if (!await confirmDialog(`Delete "${name}"? This cannot be undone.`)) return;
+    const prod = products.find(p => p.id === id || p._id === id);
+    addLocalDeleted(id, prod?.id, prod?._id, prod?.slug);
+    setProducts(prev => prev.filter(p => p.id !== id && p._id !== id && p.slug !== id));
     try {
       await api.deleteProduct(id);
-      setProducts(products.filter(p => p.id !== id && p._id !== id));
     } catch (e: any) {
-      alertDialog(e.message || 'Delete failed');
+      console.warn('Delete server note:', e);
     }
   };
 

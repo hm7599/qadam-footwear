@@ -296,13 +296,24 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
     };
   }, [activeItem]);
 
-  const sourceProducts = products && products.length > 0 ? products : INITIAL_PRODUCTS;
+  const deletedIds: string[] = React.useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('qadam_deleted_products') || '[]');
+    } catch {
+      return [];
+    }
+  }, []);
+
+  const sourceProducts = (products && products.length > 0 ? products : INITIAL_PRODUCTS)
+    .filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.slug || ''));
   const liveProducts = sourceProducts.filter(p => p.status !== 'draft');
 
   // Build dynamic gallery items by merging live products with the showcase photos:
   const galleryItems: AtelierGalleryItem[] = React.useMemo(() => {
-    // 1. Map existing ATELIER_PHOTOS with live data from products
-    const mapped: AtelierGalleryItem[] = ATELIER_PHOTOS.map(photo => {
+    // 1. Map existing ATELIER_PHOTOS with live data from products (excluding deleted items)
+    const mapped: AtelierGalleryItem[] = [];
+    for (const photo of ATELIER_PHOTOS) {
+      if (deletedIds.includes(photo.slug) || deletedIds.includes(photo.id)) continue;
       const matched = liveProducts.find(p =>
         p.slug === photo.slug ||
         p.id === photo.slug ||
@@ -311,7 +322,8 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
         (p.name && photo.title && p.name.trim().toLowerCase() === photo.title.trim().toLowerCase())
       );
 
-      const targetProd = matched || INITIAL_PRODUCTS.find(p => p.slug === photo.slug) || INITIAL_PRODUCTS[0];
+      const targetProd = matched || INITIAL_PRODUCTS.find(p => p.slug === photo.slug && !deletedIds.includes(p.slug) && !deletedIds.includes(p.id));
+      if (!targetProd) continue;
       const effPrice = targetProd.salePrice && targetProd.salePrice < targetProd.price ? targetProd.salePrice : targetProd.price;
 
       // Edition badge: prioritize admin custom edition, then special tags, then default photo edition
@@ -324,7 +336,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
         else edition = photo.edition;
       }
 
-      return {
+      mapped.push({
         id: targetProd.id || photo.id,
         title: targetProd.name || photo.title,
         category: photo.category,
@@ -343,12 +355,12 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           last: targetProd.specs?.fit || photo.specs.last,
           insole: targetProd.specs?.cushioning || photo.specs.insole,
         }
-      };
-    });
+      });
+    }
 
     // 2. Also append any extra store products created in Admin Panel that aren't already represented
     const extras: AtelierGalleryItem[] = liveProducts
-      .filter(p => !mapped.some(m => m.slug === p.slug || m.id === p.id))
+      .filter(p => !deletedIds.includes(p.id) && !deletedIds.includes(p.slug || '') && !mapped.some(m => m.slug === p.slug || m.id === p.id))
       .map(p => {
         const slugLower = (p.slug || '').toLowerCase();
         const nameLower = (p.name || '').toLowerCase();
