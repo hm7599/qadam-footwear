@@ -6,6 +6,7 @@ import { useCurrency, CURRENCIES } from '../../context/CurrencyContext';
 import { api } from '../../utils/api';
 import { Product } from '../../types';
 import { SIZE_OPTIONS, SIZE_PRESETS, sizeLabel, isValidEuSize, displaySizes } from '../../utils/sizes';
+import { COLOR_PRESETS, matchColorPreset } from '../../utils/colors';
 import { Plus, Edit, Trash2, Search, X, ChevronDown, Loader2, Package, FileSpreadsheet, Eye, EyeOff, ImageOff } from 'lucide-react';
 import { BulkProductUpload } from '../../components/admin/BulkProductUpload';
 import { alertDialog, confirmDialog } from '../../components/common/Dialog';
@@ -65,7 +66,10 @@ const EMPTY_FORM: FormState = {
   stock: '20',
   description: '',
   images: [],
-  colors: [{ name: 'Black', hex: '#111111' }],
+  colors: [
+    { name: 'Black', hex: '#111111' },
+    { name: 'Brown', hex: '#4A2E1B' },
+  ],
   sizes: [...SIZE_OPTIONS],
   trackStock: false,
   sizeStock: {},
@@ -723,36 +727,135 @@ export const AdminProductsPage: React.FC = () => {
 
                 {/* Colours */}
                 <section>
-                  <h4 className="mb-2 text-sm font-semibold text-neutral-900">Colours</h4>
-                  <div className="space-y-2">
-                    {form.colors.map((c, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={c.hex}
-                          onChange={e => set('colors', form.colors.map((x, j) => (j === i ? { ...x, hex: e.target.value } : x)))}
-                          className="h-10 w-12 cursor-pointer rounded-lg border border-neutral-200 bg-white p-1"
-                          title="Pick colour"
-                        />
-                        <input
-                          value={c.name}
-                          onChange={e => set('colors', form.colors.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
-                          placeholder="Colour name, e.g. Brown"
-                          className={inputCls}
-                        />
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-sm font-semibold text-neutral-900">Colours</h4>
+                      <p className="text-xs text-neutral-500">Select standard presets (Maroon, White, Black, Brown) or pick custom shades.</p>
+                    </div>
+
+                    {/* Quick Add Dropdown Selector */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        value=""
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (!val) return;
+                          const preset = COLOR_PRESETS.find(p => p.name === val);
+                          if (preset) {
+                            const exists = form.colors.some(c => c.name.toLowerCase() === preset.name.toLowerCase());
+                            if (!exists) {
+                              set('colors', [...form.colors, { name: preset.name, hex: preset.hex }]);
+                            }
+                          }
+                        }}
+                        className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs outline-none focus:border-neutral-900 cursor-pointer"
+                        title="Add a color from the dropdown"
+                      >
+                        <option value="">+ Add Color from Dropdown...</option>
+                        {COLOR_PRESETS.map(p => (
+                          <option key={p.name} value={p.name}>
+                            {p.name} ({p.hex})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Quick-Add Preset Badges */}
+                  <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-neutral-500 mr-1">Quick Add:</span>
+                    {COLOR_PRESETS.map(p => {
+                      const isAdded = form.colors.some(c => c.name.toLowerCase() === p.name.toLowerCase());
+                      return (
                         <button
+                          key={p.name}
                           type="button"
-                          onClick={() => set('colors', form.colors.filter((_, j) => j !== i))}
-                          disabled={form.colors.length === 1}
-                          className="rounded-lg p-2.5 text-red-500 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-30 cursor-pointer"
-                          title="Remove colour"
+                          onClick={() => {
+                            if (isAdded) {
+                              if (form.colors.length > 1) {
+                                set('colors', form.colors.filter(c => c.name.toLowerCase() !== p.name.toLowerCase()));
+                              }
+                            } else {
+                              set('colors', [...form.colors, { name: p.name, hex: p.hex }]);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
+                            isAdded
+                              ? 'bg-neutral-900 text-white shadow-2xs ring-1 ring-neutral-900'
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                          }`}
+                          title={isAdded ? `Click to remove ${p.name}` : `Click to add ${p.name}`}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <span
+                            className={`h-2.5 w-2.5 rounded-full ${p.border ? 'ring-1 ring-black/40' : 'ring-1 ring-black/10'}`}
+                            style={{ backgroundColor: p.hex }}
+                          />
+                          <span>{p.name}</span>
+                          {isAdded ? <span className="text-[10px] font-bold">✓</span> : <span className="text-[10px] opacity-60">+</span>}
                         </button>
-                      </div>
-                    ))}
-                    <button type="button" onClick={() => set('colors', [...form.colors, { name: '', hex: '#8B5A2B' }])} className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-black cursor-pointer">
-                      <Plus className="h-3.5 w-3.5" /> Add colour
+                      );
+                    })}
+                  </div>
+
+                  {/* Color rows */}
+                  <div className="space-y-2">
+                    {form.colors.map((c, i) => {
+                      const matched = matchColorPreset(c.name, c.hex);
+                      return (
+                        <div key={i} className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={c.hex}
+                            onChange={e => set('colors', form.colors.map((x, j) => (j === i ? { ...x, hex: e.target.value } : x)))}
+                            className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-neutral-200 bg-white p-1"
+                            title="Pick colour shade"
+                          />
+
+                          {/* Row dropdown selector */}
+                          <select
+                            value={matched ? matched.name : 'custom'}
+                            onChange={e => {
+                              const val = e.target.value;
+                              if (val === 'custom') return;
+                              const preset = COLOR_PRESETS.find(p => p.name === val);
+                              if (preset) {
+                                set('colors', form.colors.map((x, j) => (j === i ? { ...x, name: preset.name, hex: preset.hex } : x)));
+                              }
+                            }}
+                            className="w-36 shrink-0 rounded-lg border border-neutral-200 bg-white px-2.5 py-2.5 text-xs font-semibold text-neutral-800 outline-none focus:border-neutral-900 cursor-pointer"
+                            title="Choose color preset"
+                          >
+                            {COLOR_PRESETS.map(p => (
+                              <option key={p.name} value={p.name}>{p.name}</option>
+                            ))}
+                            <option value="custom">Custom...</option>
+                          </select>
+
+                          <input
+                            value={c.name}
+                            onChange={e => set('colors', form.colors.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                            placeholder="Colour name, e.g. Maroon"
+                            className={inputCls}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => set('colors', form.colors.filter((_, j) => j !== i))}
+                            disabled={form.colors.length === 1}
+                            className="shrink-0 rounded-lg p-2.5 text-red-500 ring-1 ring-red-200 hover:bg-red-50 disabled:opacity-30 cursor-pointer"
+                            title="Remove colour"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => set('colors', [...form.colors, { name: 'Maroon', hex: '#681326' }])}
+                      className="inline-flex items-center gap-1 pt-1 text-xs font-semibold text-neutral-600 hover:text-black cursor-pointer"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Add another colour
                     </button>
                   </div>
                 </section>

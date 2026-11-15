@@ -381,7 +381,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                         key={c.name}
                         onClick={() => setSelectedColor(c.name)}
                         title={c.name}
-                        className={`h-9 w-9 rounded-full transition-all ${
+                        className={`h-9 w-9 rounded-full border border-black/10 transition-all ${
                           selectedColor === c.name ? 'ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAFAF9]' : 'ring-1 ring-neutral-300 hover:ring-neutral-500'
                         }`}
                         style={{ backgroundColor: c.hex }}

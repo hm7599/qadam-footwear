@@ -82,16 +82,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Obsidian Noir",
+        "name": "Black",
         "hex": "#111111",
         "previewImage": "/images/mockup/hq-prod-1-oxford.png",
         "modelTint": "#111111"
       },
       {
-        "name": "Artisanal Italian Loafer",
+        "name": "Brown",
         "hex": "#4A2E1B",
         "previewImage": "/images/shoes/formal-italian-loafers.png",
         "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/featured/burgundy-loafer.png",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/mockup/hq-prod-1-oxford.png",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -151,10 +163,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Chestnut Brun",
+        "name": "Black",
+        "hex": "#111111",
+        "previewImage": "/images/shoes/artisan-leather-sandal.jpg",
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
         "hex": "#4A2E1B",
         "previewImage": "/images/shoes/artisan-leather-sandal.jpg",
         "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/artisan-leather-sandal.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/artisan-leather-sandal.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -202,10 +232,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Espresso & Nero",
-        "hex": "#2B1D14",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/shoes/luxury-leather-slides.jpg",
-        "modelTint": "#2B1D14"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/luxury-leather-slides.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/luxury-leather-slides.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/luxury-leather-slides.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -253,10 +301,34 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Cognac Sienna",
-        "hex": "#8B5A2B",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/shoes/cognac-driving-casual.jpg",
-        "modelTint": "#8B5A2B"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/cognac-driving-casual.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/cognac-driving-casual.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/cognac-driving-casual.jpg",
+        "modelTint": "#FFFFFF"
+      },
+      {
+        "name": "Tan",
+        "hex": "#C49A6C",
+        "previewImage": "/images/shoes/cognac-driving-casual.jpg",
+        "modelTint": "#C49A6C"
       }
     ],
     "sizes": [
@@ -304,10 +376,34 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Tuscan Tan",
-        "hex": "#A0522D",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/shoes/formal-derby-tan.jpg",
-        "modelTint": "#A0522D"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/formal-derby-tan.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/formal-derby-tan.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/formal-derby-tan.jpg",
+        "modelTint": "#FFFFFF"
+      },
+      {
+        "name": "Tan",
+        "hex": "#C49A6C",
+        "previewImage": "/images/shoes/formal-derby-tan.jpg",
+        "modelTint": "#C49A6C"
       }
     ],
     "sizes": [
@@ -355,10 +451,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Chestnut Patina",
-        "hex": "#5A2E17",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/shoes/formal-monkstrap-chestnut.jpg",
-        "modelTint": "#5A2E17"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/formal-monkstrap-chestnut.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/formal-monkstrap-chestnut.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/formal-monkstrap-chestnut.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -406,10 +520,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Burnished Amber",
-        "hex": "#4A2E1B",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/shoes/formal-italian-loafers.png",
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/atelier/formal_oxford_set3_3.jpg",
         "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/shoes/formal-italian-loafers.png",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/shoes/formal-italian-loafers.png",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -458,10 +590,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Sunburst Patina",
-        "hex": "#8B5A2B",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/atelier/formal_oxford_set3_3.jpg",
-        "modelTint": "#8B5A2B"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/shoes/formal-italian-loafers.png",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/atelier/formal_oxford_set3_3.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/atelier/formal_oxford_set3_3.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -510,10 +660,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Warm Cognac",
-        "hex": "#5A3825",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/atelier/formal_boot_set2_2.jpg",
-        "modelTint": "#5A3825"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/atelier/formal_boot_set2_2.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/atelier/formal_boot_set2_2.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -561,10 +729,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Amber Noir",
-        "hex": "#3A241A",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/atelier/formal_horsebit_set5_2.jpg",
-        "modelTint": "#3A241A"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/atelier/formal_horsebit_set5_2.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/atelier/formal_horsebit_set5_2.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/atelier/formal_horsebit_set5_2.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -612,10 +798,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Glacé Obsidian",
+        "name": "Black",
         "hex": "#111111",
         "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
         "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/atelier/formal_boot_set2_3.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [
@@ -663,10 +867,28 @@ export const SEED_PRODUCTS: ProductItem[] = [
     },
     "colors": [
       {
-        "name": "Obsidian Noir",
-        "hex": "#141414",
+        "name": "Black",
+        "hex": "#111111",
         "previewImage": "/images/atelier/formal_prestige_set6_2.jpg",
-        "modelTint": "#141414"
+        "modelTint": "#111111"
+      },
+      {
+        "name": "Brown",
+        "hex": "#4A2E1B",
+        "previewImage": "/images/atelier/formal_prestige_set6_2.jpg",
+        "modelTint": "#4A2E1B"
+      },
+      {
+        "name": "Maroon",
+        "hex": "#681326",
+        "previewImage": "/images/atelier/formal_prestige_set6_2.jpg",
+        "modelTint": "#681326"
+      },
+      {
+        "name": "White",
+        "hex": "#FFFFFF",
+        "previewImage": "/images/atelier/formal_prestige_set6_2.jpg",
+        "modelTint": "#FFFFFF"
       }
     ],
     "sizes": [

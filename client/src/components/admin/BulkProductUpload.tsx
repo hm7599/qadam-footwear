@@ -9,6 +9,7 @@ const TEMPLATE = [
   COLUMNS.join(','),
   'Classic Black Oxford,15999,13999,formals,men,"39,40,41,42,43,44",Black,Handmade leather office shoe,Soft Italian leather with a stitched sole.,yes,no,no,no',
   'Brown Leather Loafer,12999,,formals,men,"40,41,42,43",Brown,Easy slip-on loafer,,yes,yes,no,no',
+  'Deep Maroon Loafer,17999,15999,formals,men,"39,40,41,42,43,44",Maroon,Handmade patina finish in deep maroon,,yes,no,yes,yes',
   'Everyday White Sneaker,8999,7999,casuals,unisex,"39,40,41,42,43,44,45",White,Simple white sneaker,,no,no,yes,no',
 ].join('\n');
 

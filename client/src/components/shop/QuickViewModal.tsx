@@ -179,7 +179,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen,
                       }`}
                       title={c.name}
                     >
-                      <span className="h-5 w-5" style={{ backgroundColor: c.hex }} />
+                      <span className="h-5 w-5 ring-1 ring-black/15" style={{ backgroundColor: c.hex }} />
                     </button>
                   ))}
                 </div>

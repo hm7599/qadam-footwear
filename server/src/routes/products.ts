@@ -62,6 +62,30 @@ const CATEGORY_ALIASES: Record<string, string> = {
 };
 const yes = (v: any) => v === true || /^(1|yes|y|true)$/i.test(String(v ?? '').trim());
 
+const COLOR_HEX_MAP: Record<string, string> = {
+  maroon: '#681326',
+  oxblood: '#681326',
+  burgundy: '#681326',
+  white: '#FFFFFF',
+  offwhite: '#F5F5F0',
+  black: '#111111',
+  nero: '#111111',
+  brown: '#4A2E1B',
+  darkbrown: '#3B2212',
+  tan: '#C49A6C',
+  cognac: '#C49A6C',
+  sienna: '#8B5A2B',
+  navy: '#1A2B4C',
+  blue: '#1A2B4C',
+  grey: '#6B7280',
+  gray: '#6B7280',
+};
+
+const getColorHex = (name: string, fallback = '#111111') => {
+  const clean = String(name || '').toLowerCase().replace(/[^a-z]/g, '');
+  return COLOR_HEX_MAP[clean] || fallback;
+};
+
 // POST bulk create products as drafts (Admin)
 // body: { products: [{ name, price, salePrice?, category?, gender?, tagline?, description?, sizes?, colors?, isNewArrival?, ... }] }
 router.post('/bulk', protect, adminOnly, async (req: AuthenticatedRequest, res) => {
@@ -99,7 +123,10 @@ router.post('/bulk', protect, adminOnly, async (req: AuthenticatedRequest, res) 
         category,
         gender,
         sizes: sizes.length ? sizes : [39, 40, 41, 42, 43, 44, 45, 46],
-        colors: colorNames.map((c: string) => ({ name: c, hex: '#111111', previewImage: '', modelTint: '#FFFFFF' })),
+        colors: colorNames.map((c: string) => {
+          const hex = getColorHex(c);
+          return { name: c, hex, previewImage: '', modelTint: hex };
+        }),
         images: [],
         stock: 9999,
         isNewArrival: yes(r.isNewArrival ?? r.new),
