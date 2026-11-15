@@ -301,6 +301,22 @@ export const AdminProductsPage: React.FC = () => {
     }
   };
 
+  const publishAllDrafts = async () => {
+    const drafts = products.filter(p => p.status === 'draft');
+    if (!drafts.length) return;
+    if (!await confirmDialog(`Publish all ${drafts.length} draft product(s) to the live store now?`)) return;
+    setLoading(true);
+    try {
+      await Promise.all(drafts.map(d => api.updateProduct(d.id, { status: 'live' })));
+      await loadProducts();
+      setStatusFilter('live');
+    } catch (e: any) {
+      alertDialog(e.message || 'Could not publish products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const draftCount = products.filter(p => p.status === 'draft').length;
 
   const filtered = products.filter(p => {
@@ -335,14 +351,29 @@ export const AdminProductsPage: React.FC = () => {
           </div>
         </div>
 
-        {draftCount > 0 && statusFilter !== 'draft' && (
-          <button
-            onClick={() => setStatusFilter('draft')}
-            className="flex w-full items-center gap-3 rounded-xl bg-amber-50 px-4 py-3 text-left text-sm text-amber-900 ring-1 ring-amber-200 hover:bg-amber-100 cursor-pointer"
-          >
-            <EyeOff className="h-5 w-5 shrink-0" />
-            <span><b>{draftCount}</b> draft product{draftCount > 1 ? 's are' : ' is'} hidden from the shop. Add photos and click <b>Go live</b>.</span>
-          </button>
+        {draftCount > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
+            <div className="flex items-center gap-2.5">
+              <EyeOff className="h-5 w-5 shrink-0 text-amber-700" />
+              <span><b>{draftCount}</b> draft product{draftCount > 1 ? 's are' : ' is'} currently hidden from the live shop.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setStatusFilter('draft')}
+                className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 ring-1 ring-neutral-300 hover:bg-neutral-100 cursor-pointer"
+              >
+                View Drafts ({draftCount})
+              </button>
+              <button
+                type="button"
+                onClick={publishAllDrafts}
+                className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-800 cursor-pointer shadow-xs"
+              >
+                Publish All to Shop ({draftCount})
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="flex flex-wrap gap-2">
@@ -625,7 +656,7 @@ export const AdminProductsPage: React.FC = () => {
                   <div className="flex flex-wrap gap-2">
                     <Toggle label="New Arrivals" checked={form.isNewArrival} onChange={v => set('isNewArrival', v)} />
                     <Toggle label="Best Sellers" checked={form.isBestSeller} onChange={v => set('isBestSeller', v)} />
-                    <Toggle label="Trending" checked={form.isTrending} onChange={v => set('isTrending', v)} />
+                    <Toggle label="Trending (Featured Pick on Homepage)" checked={form.isTrending} onChange={v => set('isTrending', v)} />
                     <Toggle label="Limited Edition" checked={form.isLimitedEdition} onChange={v => set('isLimitedEdition', v)} />
                   </div>
                 </section>

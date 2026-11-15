@@ -207,8 +207,9 @@ export const DataStore = {
     if (isMongoConnected) {
       try {
         return await Product.create(productData);
-      } catch (e) {
-        console.warn('Mongo createProduct fallback:', e);
+      } catch (e: any) {
+        console.error('Mongo createProduct error:', e);
+        throw new Error(e.message || 'Database error while creating product.');
       }
     }
     const newProd = {

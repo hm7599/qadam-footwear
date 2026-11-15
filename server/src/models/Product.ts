@@ -61,28 +61,26 @@ const ProductSchema: Schema = new Schema(
     salePrice: { type: Number },
     category: {
       type: String,
-      enum: ['casuals', 'formals', 'sandals', 'slides', 'chelsea-boots', 'running', 'lifestyle', 'basketball', 'luxury-minimal'],
       default: 'formals'
     },
     gender: {
       type: String,
-      enum: ['men', 'women', 'unisex'],
-      default: 'unisex'
+      default: 'men'
     },
     description: { type: String, default: '' },
     specs: {
-      weight: { type: String, default: '230g' },
-      cushioning: { type: String, default: 'Superfoam' },
-      upperMaterial: { type: String, default: 'Engineered Knit' },
-      soleMaterial: { type: String, default: 'Vibram Compound' },
-      heelDrop: { type: String, default: '8mm' },
+      weight: { type: String, default: '' },
+      cushioning: { type: String, default: '' },
+      upperMaterial: { type: String, default: '' },
+      soleMaterial: { type: String, default: '' },
+      heelDrop: { type: String, default: '' },
       fit: { type: String, default: 'True to size' }
     },
     colors: [
       {
-        name: { type: String, required: true },
-        hex: { type: String, required: true },
-        previewImage: { type: String, required: true },
+        name: { type: String, default: 'Black' },
+        hex: { type: String, default: '#111111' },
+        previewImage: { type: String, default: '' },
         modelTint: { type: String, default: '#FFFFFF' }
       }
     ],

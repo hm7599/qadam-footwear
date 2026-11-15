@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { SIZE_OPTIONS, DEFAULT_SIZE, sizeLabel } from '../../utils/sizes';
+import React, { useState, useRef, useEffect } from 'react';
+import { displaySizes, pickDefaultSize, DEFAULT_SIZE, sizeLabel } from '../../utils/sizes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../../types';
 import { useCart } from '../../context/CartContext';
@@ -12,28 +12,53 @@ interface TrendingSectionProps {
   products: Product[];
 }
 
-
 export const TrendingSection: React.FC<TrendingSectionProps> = ({ products }) => {
-  const oxfordProduct = products.find(p => p.slug.includes('phantom')) || products[0];
+  const featuredProduct =
+    products.find(p => p.isTrending && p.status !== 'draft') ||
+    products.find(p => p.isBestSeller && p.status !== 'draft') ||
+    products.find(p => p.slug.includes('phantom')) ||
+    products[0];
 
   const [selectedSize, setSelectedSize] = useState<number>(DEFAULT_SIZE);
+  const [selectedColor, setSelectedColor] = useState<string>('Black');
   const [addedSuccess, setAddedSuccess] = useState(false);
   const [showSizeModal, setShowSizeModal] = useState(false);
+
+  useEffect(() => {
+    if (featuredProduct) {
+      setSelectedSize(pickDefaultSize(featuredProduct.sizes));
+      if (featuredProduct.colors?.[0]?.name) {
+        setSelectedColor(featuredProduct.colors[0].name);
+      }
+    }
+  }, [featuredProduct?.id]);
 
   const { addToCart, setIsCheckoutOpen } = useCart();
   const { formatPrice } = useCurrency();
   const shoeImgRef = useRef<HTMLImageElement>(null);
 
+  if (!featuredProduct) return null;
+
+  const currentPrice = featuredProduct.salePrice || featuredProduct.price;
+  const originalPrice = featuredProduct.salePrice ? featuredProduct.price : null;
+  const discountPct = originalPrice
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : null;
+
+  const activeColorObj = featuredProduct.colors?.find(c => c.name === selectedColor) || featuredProduct.colors?.[0];
+  const displayImage =
+    activeColorObj?.previewImage ||
+    featuredProduct.images?.[0] ||
+    '/images/featured/burgundy-loafer.png';
+
   const handleAddToCart = () => {
-    if (!oxfordProduct) return;
-    addToCart(oxfordProduct, 'Obsidian Noir', selectedSize, 1, shoeImgRef.current);
+    addToCart(featuredProduct, selectedColor, selectedSize, 1, shoeImgRef.current);
     setAddedSuccess(true);
     setTimeout(() => setAddedSuccess(false), 1500);
   };
 
   const handleBuyNow = () => {
-    if (!oxfordProduct) return;
-    addToCart(oxfordProduct, 'Obsidian Noir', selectedSize, 1, null);
+    addToCart(featuredProduct, selectedColor, selectedSize, 1, null);
     setIsCheckoutOpen(true);
   };
 
@@ -49,26 +74,45 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ products }) =>
               Featured Pick
             </span>
 
-            <Link to="/product/qadam-phantom-01">
+            <Link to={`/product/${featuredProduct.slug}`}>
               <h3 className="mt-4 font-serif text-3xl sm:text-4xl leading-tight tracking-tight text-neutral-950 hover:text-neutral-700 transition-colors">
-                QADAM Phantom Oxford
+                {featuredProduct.name}
               </h3>
             </Link>
             <p className="mt-2 text-sm text-neutral-500">
-              Classic black leather shoe, handmade in Italy. Perfect for office and formal events.
+              {featuredProduct.tagline || featuredProduct.description}
             </p>
 
             <div className="mt-5 flex items-center gap-3 font-tech">
-              <span className="text-2xl sm:text-[28px] font-bold tracking-tight text-neutral-950">{formatPrice(395)}</span>
-              <span className="text-sm text-neutral-400 line-through">{formatPrice(450)}</span>
-              <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold text-white">-12%</span>
+              <span className="text-2xl sm:text-[28px] font-bold tracking-tight text-neutral-950">{formatPrice(currentPrice)}</span>
+              {originalPrice && (
+                <>
+                  <span className="text-sm text-neutral-400 line-through">{formatPrice(originalPrice)}</span>
+                  <span className="rounded-full bg-red-600 px-2.5 py-0.5 text-[10px] font-bold text-white">-{discountPct}%</span>
+                </>
+              )}
             </div>
 
-            <div className="mt-5 flex items-center gap-2 text-xs text-neutral-600">
-              <span>Colour:</span>
-              <span className="h-4 w-4 rounded-full bg-black ring-2 ring-white ring-offset-1 ring-offset-neutral-300" />
-              <span className="font-semibold text-neutral-900">Black</span>
-            </div>
+            {featuredProduct.colors?.length > 0 && (
+              <div className="mt-5 flex items-center gap-2 text-xs text-neutral-600">
+                <span>Colour:</span>
+                <div className="flex items-center gap-1.5">
+                  {featuredProduct.colors.map(c => (
+                    <button
+                      key={c.name}
+                      type="button"
+                      onClick={() => setSelectedColor(c.name)}
+                      title={c.name}
+                      className={`h-4 w-4 rounded-full ring-2 transition-all cursor-pointer ${
+                        selectedColor === c.name ? 'ring-neutral-950 scale-110' : 'ring-neutral-300'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+                <span className="font-semibold text-neutral-900">{selectedColor}</span>
+              </div>
+            )}
 
             <div className="mt-5">
               <div className="mb-2 flex items-center justify-between text-xs">
@@ -81,7 +125,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ products }) =>
                 </button>
               </div>
               <div className="grid grid-cols-4 gap-2">
-                {SIZE_OPTIONS.map(sz => (
+                {displaySizes(featuredProduct.sizes).map(sz => (
                   <button
                     key={sz}
                     onClick={() => setSelectedSize(sz)}
@@ -119,14 +163,14 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ products }) =>
           {/* RIGHT: Shoe photo */}
           <div className="lg:col-span-7 order-1 lg:order-2">
             <Link
-              to="/product/qadam-phantom-01"
+              to={`/product/${featuredProduct.slug}`}
               className="group relative block aspect-[4/3] overflow-hidden rounded-2xl bg-white shadow-[0_20px_50px_-25px_rgba(0,0,0,0.25)]"
             >
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,#ffffff_0%,#F3EEE7_100%)]" />
               <motion.img
                 ref={shoeImgRef}
-                src={imgUrl("/images/featured/burgundy-loafer.png", 640)} decoding="async" loading="lazy"
-                alt="QADAM Phantom Oxford"
+                src={imgUrl(displayImage, 640)} decoding="async" loading="lazy"
+                alt={featuredProduct.name}
                 className="relative h-full w-full object-cover select-none transition-transform duration-700 group-hover:scale-105"
               />
               <span className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 text-[11px] font-semibold text-neutral-900 shadow-sm backdrop-blur opacity-0 translate-y-2 transition-all group-hover:opacity-100 group-hover:translate-y-0">
