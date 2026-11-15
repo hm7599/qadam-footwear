@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, Shuffle, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
+import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
@@ -270,11 +270,20 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   const [selectedCat, setSelectedCat] = useState<string>('all');
   const [activeItem, setActiveItem] = useState<AtelierGalleryItem | null>(null);
   const [selectedSize, setSelectedSize] = useState<number>(42);
-  const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
-  const [shuffleCount, setShuffleCount] = useState<number>(0);
-  const [isShuffling, setIsShuffling] = useState<boolean>(false);
+  const [orderVersion, setOrderVersion] = useState<number>(0);
   const [page, setPage] = useState<number>(0);
   const [viewAll, setViewAll] = useState<boolean>(false);
+  const [addedSuccess, setAddedSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleUpdate = () => setOrderVersion(v => v + 1);
+    window.addEventListener('qadam_products_updated', handleUpdate);
+    window.addEventListener('qadam_gallery_order_updated', handleUpdate);
+    return () => {
+      window.removeEventListener('qadam_products_updated', handleUpdate);
+      window.removeEventListener('qadam_gallery_order_updated', handleUpdate);
+    };
+  }, []);
 
   const ITEMS_PER_PAGE = 8;
 
@@ -411,13 +420,33 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
       });
 
     const combined = [...mapped, ...extras];
-    // Prioritize products marked as Atelier Featured in admin panel
+
+    // Check if admin has set a persistent shuffled sequence
+    let adminOrder: string[] = [];
+    try {
+      adminOrder = JSON.parse(localStorage.getItem('qadam_gallery_order') || '[]');
+    } catch {}
+
+    if (Array.isArray(adminOrder) && adminOrder.length > 0) {
+      return combined.sort((a, b) => {
+        const aIdx = adminOrder.findIndex(k => k === a.id || (a.slug && k === a.slug));
+        const bIdx = adminOrder.findIndex(k => k === b.id || (b.slug && k === b.slug));
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        const aFeat = a.isAtelierFeatured ? 1 : 0;
+        const bFeat = b.isAtelierFeatured ? 1 : 0;
+        return bFeat - aFeat;
+      });
+    }
+
+    // Default: Prioritize products marked as Atelier Featured in admin panel
     return combined.sort((a, b) => {
       const aFeat = a.isAtelierFeatured ? 1 : 0;
       const bFeat = b.isAtelierFeatured ? 1 : 0;
       return bFeat - aFeat;
     });
-  }, [liveProducts]);
+  }, [liveProducts, orderVersion]);
 
   const filteredBase = React.useMemo(() => {
     return selectedCat === 'all'
@@ -428,16 +457,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
         });
   }, [galleryItems, selectedCat]);
 
-  // When shuffle is triggered, re-order the displayed list
-  const displayItems = React.useMemo(() => {
-    if (shuffleCount === 0) return filteredBase;
-    const array = [...filteredBase];
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }, [filteredBase, shuffleCount]);
+  const displayItems = filteredBase;
 
   const totalPages = Math.max(1, Math.ceil(displayItems.length / ITEMS_PER_PAGE));
   const currentItems = viewAll
@@ -447,13 +467,6 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   useEffect(() => {
     setPage(0);
   }, [selectedCat]);
-
-  const handleShuffle = () => {
-    setIsShuffling(true);
-    setShuffleCount(c => c + 1);
-    setPage(0);
-    setTimeout(() => setIsShuffling(false), 450);
-  };
 
   const product = activeItem ? activeItem.product : null;
   const euOnly = (product?.sizes || []).filter(s => s >= 30).sort((a, b) => a - b);
@@ -527,18 +540,8 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               ))}
             </div>
 
-            {/* Actions: Shuffle & Carousel Pagination / View All */}
+            {/* Actions: View All Toggle & Pagination */}
             <div className="flex flex-wrap items-center justify-center gap-2 font-tech">
-              {/* Shuffle Button */}
-              <button
-                onClick={handleShuffle}
-                title="Shuffle products showcase"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full border border-neutral-200 bg-white text-neutral-700 hover:text-black hover:border-neutral-400 hover:bg-neutral-50 transition-all cursor-pointer shadow-2xs active:scale-95"
-              >
-                <Shuffle className={`h-3 w-3 text-[#9A7B4F] ${isShuffling ? 'animate-spin' : ''}`} />
-                <span>Shuffle</span>
-              </button>
-
               {/* View All / Paginated Toggle */}
               {displayItems.length > ITEMS_PER_PAGE && (
                 <button

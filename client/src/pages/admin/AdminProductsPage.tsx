@@ -7,7 +7,7 @@ import { api } from '../../utils/api';
 import { Product } from '../../types';
 import { SIZE_OPTIONS, SIZE_PRESETS, sizeLabel, isValidEuSize, displaySizes } from '../../utils/sizes';
 import { COLOR_PRESETS, matchColorPreset } from '../../utils/colors';
-import { Plus, Edit, Trash2, Search, X, ChevronDown, Loader2, Package, FileSpreadsheet, Eye, EyeOff, ImageOff } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, X, ChevronDown, Loader2, Package, FileSpreadsheet, Eye, EyeOff, ImageOff, Shuffle, RotateCcw } from 'lucide-react';
 import { BulkProductUpload } from '../../components/admin/BulkProductUpload';
 import { alertDialog, confirmDialog } from '../../components/common/Dialog';
 
@@ -188,6 +188,56 @@ export const AdminProductsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'draft'>('all');
   const [bulkOpen, setBulkOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [isShufflingShowcase, setIsShufflingShowcase] = useState(false);
+  const [hasCustomOrder, setHasCustomOrder] = useState<boolean>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('qadam_gallery_order') || '[]');
+      return Array.isArray(saved) && saved.length > 0;
+    } catch {
+      return false;
+    }
+  });
+
+  const handleShuffleHomepage = () => {
+    setIsShufflingShowcase(true);
+    try {
+      const baseKeys = [
+        'qadam-imperiale-woven-penny-loafer',
+        'qadam-mont-blanc-chelsea-boot',
+        'qadam-cap-toe-monk-strap',
+        'qadam-palermo-fisherman-sandal',
+        'qadam-riviera-woven-leather-slide',
+        'qadam-cognac-leather-driving-casual',
+        'qadam-patina-wholecut-oxford',
+        'qadam-classic-horsebit-loafer',
+        'qadam-heritage-oxford-brogue',
+      ];
+      const productKeys = products.map(p => p.slug || p.id).filter(Boolean);
+      const allKeys = Array.from(new Set([...productKeys, ...baseKeys]));
+      for (let i = allKeys.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
+      }
+      localStorage.setItem('qadam_gallery_order', JSON.stringify(allKeys));
+      setHasCustomOrder(true);
+      window.dispatchEvent(new Event('qadam_gallery_order_updated'));
+      window.dispatchEvent(new Event('qadam_products_updated'));
+      alertDialog('Homepage Showcase shuffled successfully! The new sequence is now live on the homepage.');
+    } catch (e) {
+      console.warn('Shuffle error:', e);
+    } finally {
+      setTimeout(() => setIsShufflingShowcase(false), 450);
+    }
+  };
+
+  const handleResetHomepageOrder = async () => {
+    if (!await confirmDialog('Reset homepage showcase sequence back to default?')) return;
+    localStorage.removeItem('qadam_gallery_order');
+    setHasCustomOrder(false);
+    window.dispatchEvent(new Event('qadam_gallery_order_updated'));
+    window.dispatchEvent(new Event('qadam_products_updated'));
+    alertDialog('Homepage Showcase restored to default order.');
+  };
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm(f => ({ ...f, [key]: value }));
 
@@ -449,7 +499,27 @@ export const AdminProductsPage: React.FC = () => {
             <h1>Products</h1>
             <p className="mt-1 text-sm text-neutral-500">{products.length} products · add, edit or remove shoes from your store.</p>
           </div>
-          <div className="flex gap-2 self-start">
+          <div className="flex flex-wrap gap-2 self-start">
+            <button
+              type="button"
+              onClick={handleShuffleHomepage}
+              title="Randomly shuffle the display order of products on the homepage showcase"
+              className="inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-2.5 text-sm font-semibold text-neutral-800 ring-1 ring-neutral-200 hover:bg-neutral-50 hover:text-black cursor-pointer shadow-2xs active:scale-95 transition-all"
+            >
+              <Shuffle className={`h-4 w-4 text-[#A8824C] ${isShufflingShowcase ? 'animate-spin' : ''}`} />
+              <span>Shuffle Homepage</span>
+            </button>
+            {hasCustomOrder && (
+              <button
+                type="button"
+                onClick={handleResetHomepageOrder}
+                title="Reset homepage showcase to default order"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-2.5 text-xs font-semibold text-neutral-500 ring-1 ring-neutral-200 hover:text-red-600 hover:ring-red-200 cursor-pointer shadow-2xs transition-all"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset Order</span>
+              </button>
+            )}
             <button
               onClick={() => setBulkOpen(true)}
               className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-neutral-800 ring-1 ring-neutral-200 hover:bg-neutral-50 cursor-pointer"
