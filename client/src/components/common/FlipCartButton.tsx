@@ -22,8 +22,8 @@ export const FlipCartButton: React.FC<Props> = ({
   flipped,
   onAdd,
   onCheckout,
-  className = 'h-14 flex-1',
-  textClassName = 'text-sm font-semibold',
+  className = 'h-11 flex-1',
+  textClassName = 'text-xs sm:text-[13px] font-semibold',
   addLabel = 'Add to Bag',
   checkoutLabel = 'Checkout',
 }) => {

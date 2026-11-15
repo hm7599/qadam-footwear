@@ -516,38 +516,40 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
 
               {/* Actions */}
               <div className="space-y-3">
-                <div className="flex gap-2">
+                <div className="flex gap-2 max-w-md">
                   {!soldOut && (
                     <FlipCartButton
                       flipped={addedToCart}
                       onAdd={handleAddToCart}
                       onCheckout={goToCheckout}
-                      className="h-14 flex-1"
+                      className="h-11 flex-1"
+                      textClassName="text-xs sm:text-[13px] font-semibold"
                     />
                   )}
                   <button
                     onClick={handleBuyNow}
-                    className={`${soldOut ? 'hidden' : 'flex'} h-14 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-sm font-semibold transition-all bg-gradient-to-r from-[#E5B56D] to-[#C9A46A] text-[#2A1A10] shadow-md shadow-[#C9A46A]/30 hover:shadow-lg`}
+                    className={`${soldOut ? 'hidden' : 'flex'} h-11 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-full text-xs sm:text-[13px] font-semibold transition-all bg-gradient-to-r from-[#E5B56D] to-[#C9A46A] text-[#2A1A10] shadow-md shadow-[#C9A46A]/30 hover:shadow-lg`}
                   >
-                    Buy Now <ArrowRight className="h-4 w-4" />
+                    <span>Buy Now</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                   <button
                     onClick={() => toggleWishlist(product)}
                     title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ring-1 transition-all ${
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-1 transition-all ${
                       isInWishlist(product.id) ? 'bg-red-50 text-red-500 ring-red-200' : 'bg-white text-neutral-600 ring-neutral-200 hover:ring-neutral-900'
                     }`}
                   >
-                    <Heart className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
+                    <Heart className={`h-4.5 w-4.5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
                   </button>
                   <button
                     onClick={() => addToCompare(product)}
                     title="Compare"
-                    className={`hidden h-14 w-14 shrink-0 items-center justify-center rounded-full ring-1 transition-all sm:flex ${
+                    className={`hidden h-11 w-11 shrink-0 items-center justify-center rounded-full ring-1 transition-all sm:flex ${
                       isInCompare(product.id) ? 'bg-neutral-950 text-white ring-neutral-950' : 'bg-white text-neutral-600 ring-neutral-200 hover:ring-neutral-900'
                     }`}
                   >
-                    <Layers className="h-5 w-5" />
+                    <Layers className="h-4.5 w-4.5" />
                   </button>
                 </div>
               </div>
