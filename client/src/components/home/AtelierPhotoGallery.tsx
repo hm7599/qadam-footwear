@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, ArrowUpRight, X, Sparkles, Check, ShoppingBag, Shield, Truck, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
+import { Eye, ArrowUpRight, ArrowRight, X, Sparkles, Check, ShoppingBag, Shield, ShieldCheck, Award, RefreshCw, Truck, CheckCircle2, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { pickDefaultSize, sizeLabel, sizeLabelFull, SIZE_OPTIONS } from '../../utils/sizes';
@@ -458,15 +458,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   }, [galleryItems, selectedCat]);
 
   const displayItems = filteredBase;
-
-  const totalPages = Math.max(1, Math.ceil(displayItems.length / ITEMS_PER_PAGE));
-  const currentItems = viewAll
-    ? displayItems
-    : displayItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
-
-  useEffect(() => {
-    setPage(0);
-  }, [selectedCat]);
+  const currentItems = displayItems;
 
   const product = activeItem ? activeItem.product : null;
   const euOnly = (product?.sizes || []).filter(s => s >= 30).sort((a, b) => a - b);
@@ -540,46 +532,12 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               ))}
             </div>
 
-            {/* Actions: View All Toggle & Pagination */}
-            <div className="flex flex-wrap items-center justify-center gap-2 font-tech">
-              {/* View All / Paginated Toggle */}
-              {displayItems.length > ITEMS_PER_PAGE && (
-                <button
-                  onClick={() => setViewAll(!viewAll)}
-                  className={`px-3.5 py-2 text-[10.5px] uppercase tracking-[0.14em] font-bold rounded-full border transition-all cursor-pointer ${
-                    viewAll
-                      ? 'bg-neutral-900 text-white border-neutral-900'
-                      : 'bg-white text-neutral-700 hover:text-black border-neutral-200 hover:border-neutral-400'
-                  }`}
-                >
-                  {viewAll ? 'Show Paginated' : `View All (${displayItems.length})`}
-                </button>
-              )}
-
-              {/* Prev / Next Page Buttons (when not View All and more than 1 page) */}
-              {!viewAll && totalPages > 1 && (
-                <div className="flex items-center gap-1 ml-1 bg-neutral-100 p-1 rounded-full border border-neutral-200">
-                  <button
-                    onClick={() => setPage(p => Math.max(0, p - 1))}
-                    disabled={page === 0}
-                    aria-label="Previous page"
-                    className="p-1.5 rounded-full hover:bg-white text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronLeft className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="text-[10px] font-bold text-neutral-600 px-2 select-none tracking-widest">
-                    {page + 1}/{totalPages}
-                  </span>
-                  <button
-                    onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                    disabled={page >= totalPages - 1}
-                    aria-label="Next page"
-                    className="p-1.5 rounded-full hover:bg-white text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
+            {/* Designs Count Pill */}
+            <div className="flex items-center gap-2 font-tech">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[10.5px] uppercase tracking-[0.16em] font-bold rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#A8824C]" />
+                {displayItems.length} {displayItems.length === 1 ? 'Design' : 'Designs Available'}
+              </span>
             </div>
           </div>
         </div>
@@ -769,60 +727,99 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
           </AnimatePresence>
         </motion.div>
 
-        {/* ── BOTTOM CAROUSEL / PAGINATION NAVIGATION ── */}
-        {!viewAll && totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-center gap-3 font-tech">
-            <button
-              onClick={() => {
-                setPage(p => Math.max(0, p - 1));
-                const el = document.getElementById('atelier-gallery');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              disabled={page === 0}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[10.5px] uppercase tracking-wider font-bold rounded-full border border-neutral-300 bg-white text-neutral-700 hover:text-black hover:border-black disabled:opacity-30 disabled:hover:border-neutral-300 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              Previous
-            </button>
-            <span className="text-[11px] font-bold text-neutral-600 tracking-widest px-2">
-              PAGE {page + 1} OF {totalPages}
-            </span>
-            <button
-              onClick={() => {
-                setPage(p => Math.min(totalPages - 1, p + 1));
-                const el = document.getElementById('atelier-gallery');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              disabled={page >= totalPages - 1}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[10.5px] uppercase tracking-wider font-bold rounded-full border border-neutral-300 bg-white text-neutral-700 hover:text-black hover:border-black disabled:opacity-30 disabled:hover:border-neutral-300 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
-            >
-              Next
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
+        {/* ── ATELIER STATEMENT BAR (REDESIGNED LUXURY SEAL) ── */}
+        <div className="relative mt-16 sm:mt-20 overflow-hidden rounded-3xl bg-gradient-to-br from-[#121110] via-[#1a1714] to-[#0c0b0a] border border-[#C9A46A]/30 p-6 sm:p-10 lg:p-12 text-white shadow-2xl shadow-black/40">
+          {/* Ambient Warm Glow & Atmospheric Lighting */}
+          <div className="absolute -top-32 -right-32 h-80 w-80 rounded-full bg-[#C9A46A]/15 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-32 -left-32 h-80 w-80 rounded-full bg-[#8C6430]/20 blur-3xl pointer-events-none" />
+          <div className="absolute top-0 left-12 right-12 h-px bg-gradient-to-r from-transparent via-[#C9A46A]/50 to-transparent pointer-events-none" />
 
-        {/* ── ATELIER STATEMENT BAR ── */}
-        <div className="mt-14 p-6 sm:p-8 bg-neutral-50 border border-neutral-200/90 rounded-xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="h-11 w-11 rounded-full bg-black text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-              <Shield className="h-5 w-5" />
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 lg:gap-12">
+            {/* Left: Medallion & Statement */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-6 max-w-3xl">
+              <div className="relative flex-shrink-0">
+                <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-[#E6CA9A] via-[#C9A46A] to-[#8C6430] p-[1.5px] shadow-xl shadow-[#C9A46A]/20">
+                  <div className="h-full w-full rounded-[14px] bg-[#141210] flex items-center justify-center">
+                    <ShieldCheck className="h-8 w-8 sm:h-9 sm:w-9 text-[#E6CA9A]" />
+                  </div>
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-[#C9A46A] text-neutral-950 flex items-center justify-center shadow-xs">
+                  <Award className="h-3.5 w-3.5" />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2 font-tech text-[10px] sm:text-[11px] uppercase tracking-[0.26em] text-[#C9A46A] font-bold">
+                  <Sparkles className="h-3 w-3 text-[#C9A46A]" />
+                  <span>QADAM Cordwainer Guarantee</span>
+                </div>
+                <h3 className="mt-1 font-serif text-xl sm:text-2xl lg:text-3xl font-normal tracking-tight text-white leading-tight">
+                  100% Genuine Italian Box Calfskin & Cordwainer Guarantee
+                </h3>
+                <p className="mt-2 font-sans text-xs sm:text-sm text-neutral-300 leading-relaxed max-w-2xl">
+                  Every pair undergoes 14 inspection checkpoints with complimentary size exchange and Cash on Delivery across Pakistan.
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-tech text-xs uppercase tracking-wider font-bold text-neutral-900">
-                100% Genuine Italian Box Calfskin & Cordwainer Guarantee
-              </h4>
-              <p className="font-sans text-xs text-neutral-500 mt-0.5">
-                Every pair undergoes 14 inspection checkpoints with complimentary size exchange and Cash on Delivery across Pakistan.
-              </p>
+
+            {/* Right: CTA Button */}
+            <div className="flex-shrink-0 flex flex-col sm:items-start lg:items-end gap-2">
+              <Link
+                to="/shop"
+                className="group inline-flex items-center justify-center gap-3 bg-gradient-to-r from-[#D4AF37] via-[#C9A46A] to-[#A8824C] hover:from-[#E2C358] hover:to-[#B89258] text-neutral-950 px-8 py-4 font-tech text-xs uppercase font-bold tracking-[0.2em] rounded-xl shadow-xl shadow-[#C9A46A]/25 hover:shadow-[#C9A46A]/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+              >
+                <span>Explore Complete Collection</span>
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1.5" />
+              </Link>
+              <span className="font-tech text-[10px] uppercase tracking-[0.16em] text-neutral-400 flex items-center gap-1.5 self-center lg:self-end">
+                <CheckCircle2 className="h-3 w-3 text-[#C9A46A]" />
+                Direct From Master Cordwainers
+              </span>
             </div>
           </div>
-          <Link
-            to="/shop"
-            className="flex-shrink-0 bg-neutral-950 text-white px-7 py-3.5 font-tech text-[11px] uppercase font-bold tracking-wider hover:bg-neutral-800 transition-colors shadow-sm rounded"
-          >
-            Explore Complete Collection →
-          </Link>
+
+          {/* 4 Pillars Hallmarks Strip */}
+          <div className="relative z-10 mt-8 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-[#C9A46A]/40 rounded-xl p-3 sm:p-3.5 transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#C9A46A]/10 text-[#C9A46A] flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Italian Box Calf</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">100% Full-Grain Hide</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-[#C9A46A]/40 rounded-xl p-3 sm:p-3.5 transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#C9A46A]/10 text-[#C9A46A] flex items-center justify-center shrink-0">
+                <Award className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">14 Quality Checks</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">Cordwainer Inspected</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-[#C9A46A]/40 rounded-xl p-3 sm:p-3.5 transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#C9A46A]/10 text-[#C9A46A] flex items-center justify-center shrink-0">
+                <RefreshCw className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Free Size Exchange</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">Doorstep Fit Guarantee</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/[0.03] border border-white/10 hover:border-[#C9A46A]/40 rounded-xl p-3 sm:p-3.5 transition-colors">
+              <div className="h-8 w-8 rounded-lg bg-[#C9A46A]/10 text-[#C9A46A] flex items-center justify-center shrink-0">
+                <Truck className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-tech text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-white truncate">Cash on Delivery</p>
+                <p className="font-sans text-[10px] text-neutral-400 truncate">Nationwide Pakistan</p>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

@@ -38,7 +38,6 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
   const [priceMax, setPriceMax] = useState<number>(500);
   const [sortBy, setSortBy] = useState<string>('featured');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [visibleCount, setVisibleCount] = useState<number>(12);
 
   useEffect(() => {
     if (fixedCategory) {
@@ -418,39 +417,25 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
             </button>
           </div>
         ) : (
-          <>
             <motion.div
               layout
               className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8 sm:gap-x-5`}
             >
               <AnimatePresence>
-                {filteredProducts.slice(0, visibleCount).map((prod, i) => (
+                {filteredProducts.map((prod, i) => (
                   <motion.div
                     key={prod.id}
                     layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.4, delay: Math.min(i * 0.04, 0.3), ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.25), ease: [0.16, 1, 0.3, 1] }}
                   >
                     <ProductCard product={prod} />
                   </motion.div>
                 ))}
               </AnimatePresence>
             </motion.div>
-
-            {/* Load More Button */}
-            {visibleCount < filteredProducts.length && (
-              <div className="mt-16 text-center">
-                <button
-                  onClick={() => setVisibleCount(c => c + 12)}
-                  className="bg-white border-2 border-black text-black px-10 py-4 font-tech text-xs uppercase font-bold tracking-[0.2em] hover:bg-black hover:text-white transition-all shadow-md active:scale-98"
-                >
-                  Load More ({filteredProducts.length - visibleCount} Remaining)
-                </button>
-              </div>
-            )}
-          </>
         )}
       </div>
     </div>
