@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m as motion } from 'framer-motion';
 import { Download, RefreshCw, X, Sparkles } from 'lucide-react';
 
 declare const __APP_VERSION__: string;

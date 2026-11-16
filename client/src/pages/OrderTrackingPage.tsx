@@ -1,7 +1,7 @@
 import { imgUrl } from '../utils/img';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import {
   Search, Truck, Check, Clock, MapPin, Package, PackageCheck, ClipboardCheck, FileDown,
   RefreshCw, XCircle, Phone, MessageCircle, Copy,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../../types';
 import { ArrowRight, ChevronLeft, ChevronRight, Layers, ShieldCheck, Feather, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';

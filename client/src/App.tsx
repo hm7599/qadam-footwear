@@ -1,5 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig, LazyMotion } from 'framer-motion';
+
+const loadMotionFeatures = () => import('./utils/motionFeatures').then(r => r.default);
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
 import { WishlistProvider } from './context/WishlistContext';
@@ -71,6 +73,7 @@ import { api } from './utils/api';
 import { Product } from './types';
 import { INITIAL_PRODUCTS } from './data/initialProducts';
 import { useCart } from './context/CartContext';
+import { PageLoader } from './components/common/PageLoader';
 import { DialogHost } from './components/common/Dialog';
 
 // Opens the checkout modal, then settles the user on the cart page
@@ -122,7 +125,7 @@ const LayoutShell: React.FC<{ products: Product[] }> = ({ products }) => {
       {!isAdminRoute && <InstallAppBanner />}
       <UpdatePrompt variant={isAdminRoute ? 'admin' : 'customer'} />
 
-      <Suspense fallback={<div className="flex min-h-screen items-center justify-center" aria-busy="true"><span className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" /></div>}>
+      <Suspense fallback={<PageLoader className="min-h-screen" />}>
       <Routes>
         {/* Customer Pages */}
         <Route path="/" element={<HomePage products={products} />} />
@@ -238,6 +241,7 @@ export default function App() {
   }, [loadInitialProducts]);
 
   return (
+    <LazyMotion features={loadMotionFeatures}>
     <MotionConfig reducedMotion="user">
     <Router>
       <AuthProvider>
@@ -256,5 +260,6 @@ export default function App() {
       </AuthProvider>
     </Router>
     </MotionConfig>
+    </LazyMotion>
   );
 }

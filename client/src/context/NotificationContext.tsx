@@ -17,8 +17,6 @@ const sameKey = (a: ArrayBuffer | null | undefined, b: Uint8Array) => {
 };
 
 const SUB_FLAG = 'aura_push_customer';        // set when this browser is subscribed to shop alerts
-const DISMISS_KEY = 'aura_push_dismissed_at'; // don't nag again for a few days
-const DISMISS_DAYS = 3;
 
 export type PushSupport = 'supported' | 'unsupported' | 'ios-needs-install' | 'insecure';
 
@@ -66,7 +64,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(
     typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   );
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  // Start from what this browser already knows so a subscribed visitor never sees the invite flash
+  const [isSubscribed, setIsSubscribed] = useState(() => {
+    try {
+      return typeof Notification !== 'undefined' && Notification.permission === 'granted' && !!localStorage.getItem(SUB_FLAG);
+    } catch { return false; }
+  });
+  const [subChecked, setSubChecked] = useState(false);
   const [isPromptOpen, setIsPromptOpen] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -75,7 +79,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
   // Sync existing browser subscription to server on load (recovers if server restarted)
   useEffect(() => {
-    if (support !== 'supported') return;
+    if (support !== 'supported') { setSubChecked(true); return; }
     let cancelled = false;
     (async () => {
       try {
@@ -108,6 +112,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         }
       } catch {
         if (!cancelled) setIsSubscribed(false);
+      } finally {
+        if (!cancelled) setSubChecked(true);
       }
     })();
     return () => { cancelled = true; };
@@ -137,22 +143,21 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return () => clearTimeout(t);
   }, [incomingPush]);
 
-  // Show the invite once in a while (not on admin pages, not if blocked or already on)
+  // Invite once per page load until the visitor turns alerts on.
+  // Subscribed → never shown. Not subscribed → shown again after every refresh.
+  // Waits for the subscription check so subscribed visitors never see it.
+  const promptedThisLoad = React.useRef(false);
   useEffect(() => {
+    if (!subChecked || promptedThisLoad.current) return;
     if (location.pathname.startsWith('/admin')) return;
     if (support === 'unsupported' || support === 'insecure') return;
     if (permission === 'denied' || isSubscribed) return;
-    let recentlyDismissed = false;
-    try {
-      recentlyDismissed = Date.now() - Number(localStorage.getItem(DISMISS_KEY) || 0) < DISMISS_DAYS * 864e5;
-    } catch { /* ignore */ }
-    if (recentlyDismissed || sessionStorage.getItem('aura_push_prompted')) return;
     const t = setTimeout(() => {
+      promptedThisLoad.current = true;
       setIsPromptOpen(true);
-      sessionStorage.setItem('aura_push_prompted', '1');
-    }, 12000);
+    }, 6000);
     return () => clearTimeout(t);
-  }, [support, permission, isSubscribed]);
+  }, [subChecked, support, permission, isSubscribed]);
 
   const subscribeToPush = async (): Promise<boolean> => {
     setErrorMessage(null);
@@ -242,9 +247,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const openPrompt = () => { setErrorMessage(null); setStatusMessage(null); setIsPromptOpen(true); };
   const closePrompt = () => {
     setIsPromptOpen(false);
-    if (!isSubscribed) {
-      try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch { /* ignore */ }
-    }
   };
 
   return (

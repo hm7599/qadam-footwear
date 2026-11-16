@@ -7,6 +7,10 @@ import { protect, adminOnly, AuthenticatedRequest } from '../middleware/auth.js'
 const router = Router();
 
 // GET all products with filtering & sorting
+// Public catalogue reads are cached briefly at the CDN edge (admin uses /admin/all, uncached).
+// Browsers always revalidate; the edge serves a copy up to 30s old and refreshes it in the background.
+const PUBLIC_CACHE = 'public, max-age=0, s-maxage=30, stale-while-revalidate=300';
+
 router.get('/', async (req, res) => {
   try {
     const { category, gender, isNewArrival, isBestSeller, isTrending, isLimitedEdition, search, sort } = req.query;
@@ -32,6 +36,7 @@ router.get('/', async (req, res) => {
       products.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
 
+    res.setHeader('Cache-Control', PUBLIC_CACHE);
     res.json({
       success: true,
       count: products.length,
@@ -160,6 +165,7 @@ router.get('/:idOrSlug', async (req, res) => {
     if (!product || (product as any).status === 'draft') {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
+    res.setHeader('Cache-Control', PUBLIC_CACHE);
     res.json({
       success: true,
       data: product

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m as motion } from 'framer-motion';
 import { Download, Share, X } from 'lucide-react';
 import { useInstallPrompt, isIOS, isStandalone } from '../../utils/pwa';
 

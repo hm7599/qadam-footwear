@@ -4,7 +4,8 @@ import { Product } from '../types';
 import { ProductCard } from '../components/shop/ProductCard';
 import { useCurrency } from '../context/CurrencyContext';
 import { SlidersHorizontal, ArrowUpDown, X, Check, Filter, ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
+import { categoryHasProducts, matchesCategory } from '../utils/categories';
 import { displaySizes, sizeLabel } from '../utils/sizes';
 
 interface ShopAllPageProps {
@@ -66,21 +67,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
       if (fixedBadge === 'bestseller' && !p.isBestSeller) return false;
       if (urlFilter === 'limited' && !p.isLimitedEdition) return false;
       if (selectedCategory !== 'all') {
-        const cat = p.category.toLowerCase();
-        const sel = selectedCategory.toLowerCase();
-        if (sel === 'formals') {
-          if (cat !== 'formals' && cat !== 'luxury-minimal') return false;
-        } else if (sel === 'chelsea-boots' || sel === 'chelsea') {
-          if (cat !== 'chelsea-boots' && !p.slug.includes('chelsea') && !p.name.toLowerCase().includes('chelsea')) return false;
-        } else if (sel === 'casuals') {
-          if (cat !== 'casuals' && cat !== 'lifestyle') return false;
-        } else if (sel === 'sandals') {
-          if (cat !== 'sandals' && !p.slug.includes('sandal') && !p.name.toLowerCase().includes('sandal')) return false;
-        } else if (sel === 'slides') {
-          if (cat !== 'slides' && !p.slug.includes('slide') && !p.name.toLowerCase().includes('slide')) return false;
-        } else if (cat !== sel) {
-          return false;
-        }
+        if (!matchesCategory(p, selectedCategory)) return false;
       }
       if (selectedGender !== 'all' && p.gender !== selectedGender && p.gender !== 'unisex') return false;
       if (selectedSize && !p.sizes.includes(selectedSize)) return false;
@@ -247,7 +234,7 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
                       Discipline
                     </h4>
                     <div className="flex flex-col gap-1.5">
-                      {CATEGORIES.map(c => (
+                      {CATEGORIES.filter(c => c.id === 'all' || c.id === selectedCategory || categoryHasProducts(products, c.id)).map(c => (
                         <button
                           key={c.id}
                           onClick={() => setSelectedCategory(c.id)}
@@ -425,13 +412,12 @@ export const ShopAllPage: React.FC<ShopAllPageProps> = ({
                 {filteredProducts.map((prod, i) => (
                   <motion.div
                     key={prod.id}
-                    layout
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.4, delay: Math.min(i * 0.03, 0.25), ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <ProductCard product={prod} />
+                    <ProductCard product={prod} priority={i < 4} />
                   </motion.div>
                 ))}
               </AnimatePresence>

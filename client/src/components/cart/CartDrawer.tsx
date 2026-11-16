@@ -1,7 +1,7 @@
 import React from 'react';
 import { CouponBox, FreeShippingBar, PriceSummary } from './PromoWidgets';
 import { sizeLabel } from '../../utils/sizes';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';

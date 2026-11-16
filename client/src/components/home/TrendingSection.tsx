@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { displaySizes, pickDefaultSize, DEFAULT_SIZE, sizeLabel } from '../../utils/sizes';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { Product } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useCurrency } from '../../context/CurrencyContext';

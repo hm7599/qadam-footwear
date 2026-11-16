@@ -5,7 +5,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { X, Heart, ShoppingBag, ArrowRight, Check, Star, ShieldCheck, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { imgUrl } from '../../utils/img';
 import { sizeLabel, sizeLabelFull, pickDefaultSize } from '../../utils/sizes';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { useCompare } from '../../context/CompareContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { X, Layers, ArrowRight } from 'lucide-react';

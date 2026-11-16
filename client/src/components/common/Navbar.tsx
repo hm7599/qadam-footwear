@@ -25,7 +25,8 @@ import { useStoreWhatsAppNumber } from '../../utils/whatsapp';
 import { SearchModal } from './SearchModal';
 import { ActivePromoBanner } from './ActivePromoBanner';
 import { Product } from '../../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { categoryFromHref, categoryHasProducts } from '../../utils/categories';
+import { m as motion, AnimatePresence } from 'framer-motion';
 
 interface NavbarProps {
   products: Product[];
@@ -101,6 +102,10 @@ const actionCircleBtn =
   'relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F6] text-neutral-800 transition hover:bg-[#E5E7EB] hover:text-black cursor-pointer';
 
 export const Navbar: React.FC<NavbarProps> = ({ products }) => {
+  const hasItems = (item: { href: string }) => {
+    const cat = categoryFromHref(item.href);
+    return !cat || categoryHasProducts(products, cat);
+  };
   const { totalCount, setIsCartOpen, cartShake } = useCart();
   const { wishlist } = useWishlist();
   const { user, isAdmin, logout } = useAuth();
@@ -248,7 +253,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
             <div className="hidden lg:grid grid-cols-[1fr_auto_1fr] items-center h-[70px] sm:h-[74px] px-3 sm:px-6">
               {/* Left Column: Home, Casuals, Formals, Sandals + Divider */}
               <div className="flex items-center justify-end gap-3 xl:gap-6 pr-5 xl:pr-8">
-                {LEFT_NAV_ITEMS.map(renderNavTab)}
+                {LEFT_NAV_ITEMS.filter(hasItems).map(renderNavTab)}
                 <div className="h-8 w-px bg-neutral-200/90 ml-1.5 xl:ml-3 self-center" />
               </div>
 
@@ -273,7 +278,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
                   </span>
 
                   {/* Brand Logo */}
-                  <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-16 w-auto object-contain transition-transform group-hover:scale-[1.02]" />
+                  <img src="/logo.webp?v=1" alt="QADAM Men's Footwear" className="h-16 w-auto object-contain transition-transform group-hover:scale-[1.02]" />
 
                   {/* Ambient Gold Spotlight Backlight */}
                   <div className="pointer-events-none absolute -bottom-3 left-1/2 -translate-x-1/2 w-48 h-5 bg-[#E5B56D]/35 blur-md rounded-full" />
@@ -284,7 +289,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
               <div className="flex items-center justify-between gap-2 pl-5 xl:pl-8">
                 {/* Right Categories */}
                 <div className="flex items-center gap-3 xl:gap-6">
-                  {RIGHT_NAV_ITEMS.map(renderNavTab)}
+                  {RIGHT_NAV_ITEMS.filter(hasItems).map(renderNavTab)}
                 </div>
 
                 {/* Right Action Icons: Circular Search, Wishlist, Cart, Account */}
@@ -347,7 +352,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
             {/* Mobile / Tablet View (< 1024px) */}
             <div className="flex lg:hidden items-center justify-between h-[64px] px-3 sm:px-4">
               <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
-                <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
+                <img src="/logo.webp?v=1" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
               </Link>
 
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -414,7 +419,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
               {/* Drawer Header */}
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-neutral-200 px-4 bg-white">
                 <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
-                  <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
+                  <img src="/logo.webp?v=1" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
                 </Link>
                 <button
                   type="button"
@@ -428,7 +433,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
 
               {/* Drawer Navigation Items with Luxury Silhouette Icons */}
               <div className="flex-1 overflow-y-auto px-4 py-5 space-y-1">
-                {[...LEFT_NAV_ITEMS, ...RIGHT_NAV_ITEMS].map(item => {
+                {[...LEFT_NAV_ITEMS, ...RIGHT_NAV_ITEMS].filter(hasItems).map(item => {
                   const isHome = item.href === '/';
                   const isActive = isHome ? location.pathname === '/' : fullPath === item.href;
                   const Icon = item.Icon;

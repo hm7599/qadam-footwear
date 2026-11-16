@@ -1,5 +1,5 @@
 import { DataStore } from '../config/store.js';
-import { webpush } from '../utils/push.js';
+import { webpush, isDeadSubscription } from '../utils/push.js';
 import { Messages, MarketingMessage, isValidEmail, isValidPhone, normPhone, normEmail } from './store.js';
 
 type Channel = MarketingMessage['channel'];
@@ -36,7 +36,7 @@ async function sendPush(endpoint: string, subject: string, body: string, link: s
       JSON.stringify({ title: subject, body: body.split('\n')[0].slice(0, 180), url: link, icon: '/icons/icon-192.png', badge: '/favicon-32.png', tag }),
     );
   } catch (err: any) {
-    if (err?.statusCode === 404 || err?.statusCode === 410) await DataStore.removeSubscriber(sub.endpoint);
+    if (isDeadSubscription(err)) await DataStore.removeSubscriber(sub.endpoint);
     throw new Error(err?.body || err?.message || 'Push failed');
   }
 }

@@ -18,7 +18,8 @@ import {
   ChevronLeft, ChevronRight, ZoomIn, X, Check, Star, Camera,
   Ruler, Sparkles, HelpCircle, ArrowRight
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { PageLoader } from '../components/common/PageLoader';
+import { m as motion, AnimatePresence } from 'framer-motion';
 
 interface ProductDetailsPageProps {
   products: Product[];
@@ -116,16 +117,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
   }, [product?.id]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center pt-24 bg-white">
-        <div className="flex flex-col items-center gap-3 font-tech">
-          <div className="h-7 w-7 animate-spin border-2 border-neutral-200 border-t-black" />
-          <span className="text-[10px] uppercase tracking-[0.25em] text-neutral-500">
-            Loading…
-          </span>
-        </div>
-      </div>
-    );
+    return <PageLoader className="pt-24" />;
   }
 
   if (!product) {
@@ -152,7 +144,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
   const price = product.salePrice || product.price;
   const soldOut = !!selectedSize && isSoldOut(product, selectedSize);
 
-  const parsedSpecsAndStory = React.useMemo(() => {
+  const parsedSpecsAndStory = (() => {
     if (!product) return { lead: '', narrative: '', specItems: [] };
 
     const rawDesc = (product.description || '').trim();
@@ -216,7 +208,7 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
       narrative: narrative || rawDesc,
       specItems,
     };
-  }, [product]);
+  })();
 
   const handleAddToCart = (e?: React.MouseEvent<HTMLElement>) => {
     if (!selectedSize) {

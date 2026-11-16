@@ -1,5 +1,5 @@
 import { DataStore } from '../config/store.js';
-import { webpush } from './push.js';
+import { webpush, isDeadSubscription } from './push.js';
 
 /** Default push text for each order status (simple English) */
 export const ORDER_PUSH_TEXT: Record<string, { title: string; body: string }> = {
@@ -38,7 +38,7 @@ export async function sendOrderPush(
           delivered++;
         } catch (err: any) {
           failed++;
-          if (err?.statusCode === 404 || err?.statusCode === 410) await DataStore.removeSubscriber(sub.endpoint);
+          if (isDeadSubscription(err)) await DataStore.removeSubscriber(sub.endpoint);
         }
       })
     );

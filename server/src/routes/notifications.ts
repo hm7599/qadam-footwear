@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { DataStore } from '../config/store.js';
-import { webpush, vapidPublicKey } from '../utils/push.js';
+import { webpush, vapidPublicKey, isDeadSubscription } from '../utils/push.js';
 import { protect, adminOnly, AuthenticatedRequest } from '../middleware/auth.js';
 import { sendOrderPush, ORDER_PUSH_TEXT } from '../utils/orderPush.js';
 
@@ -154,7 +154,7 @@ router.post('/send', protect, adminOnly, async (req: AuthenticatedRequest, res) 
         const label = code ? `[${code}] ${detail}` : detail;
         console.warn('[Push] Broadcast send failed:', label);
         if (errors.length < 5 && !errors.includes(label)) errors.push(label);
-        if (code === 404 || code === 410 || /VapidPkHashMismatch|unsubscribed/i.test(detail)) {
+        if (isDeadSubscription(err)) {
           staleEndpoints.push(sub.endpoint);
         }
       }

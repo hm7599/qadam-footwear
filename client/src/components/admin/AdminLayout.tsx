@@ -102,7 +102,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-6">
         <div className="leading-tight">
-          <img src="/logo.png?v=3" alt="QADAM" className="h-10 w-auto object-contain" />
+          <img src="/logo.webp?v=1" alt="QADAM" className="h-10 w-auto object-contain" />
           <p className="text-[11px] text-[#8A6A52]">Admin Panel</p>
         </div>
       </div>

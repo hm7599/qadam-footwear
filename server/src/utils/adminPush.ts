@@ -1,4 +1,4 @@
-import { webpush } from './push.js';
+import { webpush, isDeadSubscription } from './push.js';
 import { SettingsStore } from '../config/settingsStore.js';
 
 // Push subscriptions of admin devices (phones/PCs that should be told about new orders).
@@ -42,7 +42,7 @@ export async function sendToAdmins(payload: Record<string, any>) {
         await webpush.sendNotification({ endpoint: s.endpoint, keys: s.keys }, JSON.stringify(payload), { TTL: 60 * 60 * 24 });
         sent++;
       } catch (err: any) {
-        if (err?.statusCode === 404 || err?.statusCode === 410) dead.push(s.endpoint);
+        if (isDeadSubscription(err)) dead.push(s.endpoint);
       }
     })
   );

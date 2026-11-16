@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { Eye, ArrowUpRight, ArrowRight, X, Sparkles, Check, ShoppingBag, Shield, ShieldCheck, Award, RefreshCw, Truck, CheckCircle2, ChevronLeft, ChevronRight, Heart, Star } from 'lucide-react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -441,7 +441,9 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
   }, [galleryItems, selectedCat]);
 
   const displayItems = filteredBase;
-  const currentItems = displayItems;
+  // Render a few cards at first; the full list was ~16,000px tall on mobile and very slow
+  const currentItems = viewAll ? displayItems : displayItems.slice(0, ITEMS_PER_PAGE);
+  const hiddenCount = displayItems.length - currentItems.length;
 
   const product = activeItem ? activeItem.product : null;
   const euOnly = (product?.sizes || []).filter(s => s >= 30).sort((a, b) => a - b);
@@ -526,11 +528,7 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
         </div>
 
         {/* ── GALLERY GRID (4 Columns on Desktop) ── */}
-        <motion.div
-          layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6"
-        >
-          <AnimatePresence mode="popLayout">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {currentItems.map((item, idx) => {
               const inWishlist = isInWishlist(item.product.id || item.id);
               const hasDiscount = !!(item.originalPrice && item.originalPrice > item.price);
@@ -538,13 +536,9 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
               const savings = hasDiscount ? item.originalPrice! - item.price : 0;
 
               return (
-                <motion.div
+                <div
                   key={item.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.35, delay: idx * 0.03 }}
+                  style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 520px' }}
                   className="group relative bg-white border border-neutral-200/90 rounded-2xl overflow-hidden flex flex-col justify-between hover:border-[#C9A46A]/60 hover:shadow-[0_20px_40px_-15px_rgba(59,38,24,0.12)] hover:-translate-y-1 transition-all duration-300"
                 >
                   {/* Image Canvas with hover zoom */}
@@ -704,11 +698,22 @@ export const AtelierPhotoGallery: React.FC<{ products?: Product[] }> = ({ produc
                       </Link>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-          </AnimatePresence>
-        </motion.div>
+        </div>
+
+        {hiddenCount > 0 && (
+          <div className="mt-8 flex justify-center">
+            <button
+              type="button"
+              onClick={() => setViewAll(true)}
+              className="rounded-full border border-neutral-900 px-8 py-3 font-tech text-[11px] font-bold uppercase tracking-widest text-neutral-900 transition-colors hover:bg-neutral-900 hover:text-white"
+            >
+              Load More ({hiddenCount})
+            </button>
+          </div>
+        )}
 
         {/* ── ATELIER STATEMENT BAR (REDESIGNED LUXURY SEAL) ── */}
         <div className="relative mt-16 sm:mt-20 overflow-hidden rounded-3xl bg-gradient-to-br from-[#121110] via-[#1a1714] to-[#0c0b0a] border border-[#C9A46A]/30 p-6 sm:p-10 lg:p-12 text-white shadow-2xl shadow-black/40">

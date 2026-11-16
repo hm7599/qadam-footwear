@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m as motion } from 'framer-motion';
 import { X, Send, CheckCircle2, Clock, Truck, PackageCheck, XCircle, Wallet, MessageSquare, Pencil } from 'lucide-react';
 import { Order } from '../../types';
 import { WhatsAppSettings, fillTemplate, whatsappLink, TEMPLATE_FOR_STATUS, toWhatsAppNumber } from '../../utils/whatsapp';

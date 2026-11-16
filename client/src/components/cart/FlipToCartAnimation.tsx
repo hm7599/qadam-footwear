@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../context/CartContext';
 import { imgUrl } from '../../utils/img';
 

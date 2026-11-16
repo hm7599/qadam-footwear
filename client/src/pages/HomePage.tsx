@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HeroSection } from '../components/home/HeroSection';

@@ -3,7 +3,8 @@ import { Product } from '../../types';
 import { ProductCard } from '../shop/ProductCard';
 import { Link } from 'react-router-dom';
 import { MoveRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
+import { categoryHasProducts, matchesCategory } from '../../utils/categories';
 
 interface CollectionsSectionProps {
   products: Product[];
@@ -24,15 +25,11 @@ export const CollectionsSection: React.FC<CollectionsSectionProps> = ({ products
   const [activeTab, setActiveTab] = useState<TabId>('bestseller');
 
   const liveOnly = products.filter(p => p.status !== 'draft');
-  const filteredProducts = liveOnly.filter(p => {
-    if (activeTab === 'bestseller') return p.isBestSeller;
-    if (activeTab === 'casuals') return p.category === 'casuals';
-    if (activeTab === 'formals') return p.category === 'formals' || p.category === 'luxury-minimal';
-    if (activeTab === 'sandals') return p.category === 'sandals' || p.slug.includes('sandal');
-    if (activeTab === 'slides') return p.category === 'slides' || p.slug.includes('slide');
-    if (activeTab === 'chelsea') return p.category === 'chelsea-boots' || p.slug.includes('chelsea');
-    return true;
-  });
+  // Hide category tabs that have no products yet (e.g. Sandals / Slides)
+  const visibleTabs = TABS.filter(t => t.id === 'bestseller' || categoryHasProducts(products, t.id));
+  const filteredProducts = liveOnly.filter(p =>
+    activeTab === 'bestseller' ? p.isBestSeller : matchesCategory(p, activeTab)
+  );
 
   // Show up to 10 products for clean 5-column rows
   const MAX_ITEMS = 10;
@@ -79,7 +76,7 @@ export const CollectionsSection: React.FC<CollectionsSectionProps> = ({ products
 
           {/* Pill Tabs */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 font-tech">
-            {TABS.map(tab => (
+            {visibleTabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -105,8 +102,8 @@ export const CollectionsSection: React.FC<CollectionsSectionProps> = ({ products
             transition={{ duration: 0.35 }}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5"
           >
-            {displayProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+            {displayProducts.map((product, i) => (
+              <ProductCard key={product.id} product={product} priority={i < 4} />
             ))}
           </motion.div>
         </AnimatePresence>

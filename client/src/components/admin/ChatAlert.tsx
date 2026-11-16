@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m as motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Headset, X, Reply } from 'lucide-react';
 import { chatApi } from '../../utils/chatApi';

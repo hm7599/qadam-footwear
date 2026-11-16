@@ -51,7 +51,7 @@ export const AdminLoginPage: React.FC = () => {
       <div className="relative w-full max-w-sm">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-20 w-auto object-contain" />
+          <img src="/logo.webp?v=1" alt="QADAM Men's Footwear" className="h-20 w-auto object-contain" />
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-[#2E1D12]">Welcome back</h1>
           <p className="mt-1 text-sm text-[#8A6A52]">Sign in to QADAM Admin</p>
         </div>

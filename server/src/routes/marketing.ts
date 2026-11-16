@@ -43,11 +43,13 @@ router.post('/quote', wrap(async (req, res) => {
 
 router.get('/offers', wrap(async (_req, res) => ok(res, await publicOffers())));
 
-router.get('/shipping-info', wrap(async (_req, res) => {
+export async function publicShippingInfo() {
   const s = await getShipping();
   const { thresholdRs, campaign } = activeThreshold(s);
-  ok(res, { enabled: s.enabled && thresholdRs > 0, threshold: toBase(thresholdRs), thresholdRs, campaign, standardFee: toBase(s.standardFeeRs), expressFee: toBase(s.expressFeeRs) });
-}));
+  return { enabled: s.enabled && thresholdRs > 0, threshold: toBase(thresholdRs), thresholdRs, campaign, standardFee: toBase(s.standardFeeRs), expressFee: toBase(s.expressFeeRs) };
+}
+
+router.get('/shipping-info', wrap(async (_req, res) => ok(res, await publicShippingInfo())));
 
 // Save the shopper's bag for abandoned-cart recovery
 router.post('/cart', wrap(async (req, res) => {
@@ -462,14 +464,14 @@ router.get('/promo-audience', ...admin, wrap(async (_req, res) => {
 }));
 
 // Public active promotion endpoint for storefront
-router.get('/active-promo', wrap(async (_req, res) => {
+export async function publicActivePromo() {
   const promo: any = await SettingsStore.get('activePromotion');
-  if (!promo || !promo.active) return ok(res, null);
-  if (promo.expiresAt && new Date(promo.expiresAt).getTime() < Date.now()) {
-    return ok(res, null);
-  }
-  ok(res, promo);
-}));
+  if (!promo || !promo.active) return null;
+  if (promo.expiresAt && new Date(promo.expiresAt).getTime() < Date.now()) return null;
+  return promo;
+}
+
+router.get('/active-promo', wrap(async (_req, res) => ok(res, await publicActivePromo())));
 
 // Admin clear active promotion
 router.delete('/active-promo', ...admin, wrap(async (_req, res) => {

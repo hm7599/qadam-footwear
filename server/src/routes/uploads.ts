@@ -30,6 +30,16 @@ const EXT_TO_MIME: Record<string, string> = {
 };
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
+// Only these widths are allowed for ?w= so the cache can't be flooded with random sizes
+const WIDTHS = [160, 240, 320, 480, 640, 960];
+function resizeWidth(q: unknown): number | null {
+  const n = Number(Array.isArray(q) ? q[0] : q);
+  if (!n) return null;
+  return WIDTHS.find(x => x >= n) ?? WIDTHS[WIDTHS.length - 1];
+}
+const resizeToWebp = (buf: Buffer, w: number) =>
+  sharp(buf, { limitInputPixels: 50_000_000 }).resize({ width: w, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
+
 function setImageCacheHeaders(req: Request, res: Response, fileName: string, contentType: string): boolean {
   const etag = `"${fileName}"`;
   res.setHeader('Content-Type', contentType);
@@ -55,6 +65,12 @@ router.get('/:fileName', async (req, res) => {
     if (isMongoConnected) {
       const doc = await UploadedImage.findOne({ fileName }).select('contentType data');
       if (doc?.data) {
+        const w = resizeWidth(req.query.w);
+        if (w && doc.contentType !== 'image/gif') {
+          // Small WebP copy for cards/thumbnails; the CDN caches each width for a year
+          if (setImageCacheHeaders(req, res, `${fileName}@${w}`, 'image/webp')) return;
+          return res.send(await resizeToWebp(doc.data as Buffer, w));
+        }
         if (setImageCacheHeaders(req, res, fileName, doc.contentType)) return;
         return res.send(doc.data);
       }
@@ -64,6 +80,11 @@ router.get('/:fileName', async (req, res) => {
     if (fs.existsSync(diskPath)) {
       const ext = path.extname(fileName).slice(1).toLowerCase();
       const mime = EXT_TO_MIME[ext] || 'application/octet-stream';
+      const w = resizeWidth(req.query.w);
+      if (w && mime !== 'image/gif') {
+        if (setImageCacheHeaders(req, res, `${fileName}@${w}`, 'image/webp')) return;
+        return res.send(await resizeToWebp(fs.readFileSync(diskPath), w));
+      }
       if (setImageCacheHeaders(req, res, fileName, mime)) return;
       return res.sendFile(diskPath);
     }

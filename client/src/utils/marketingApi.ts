@@ -1,4 +1,6 @@
 // Calls for the marketing features (coupons, free delivery, abandoned carts, stock & price alerts)
+import { fromBootstrap } from './bootstrap';
+
 const BASE = '/api/marketing';
 
 const headers = (): HeadersInit => {
@@ -43,7 +45,7 @@ export const marketingApi = {
   // public
   quote: (body: any) => send<Quote>('POST', '/quote', body).then(r => r.data),
   offers: () => get<Offer[]>('/offers'),
-  shippingInfo: () => get<ShippingInfo>('/shipping-info'),
+  shippingInfo: async () => (await fromBootstrap<ShippingInfo>(d => d.shippingInfo ?? undefined, 'shippingInfo')) ?? get<ShippingInfo>('/shipping-info'),
   syncCart: (body: any) => send('POST', '/cart', body),
   recover: (token: string) => get<{ items: Array<{ productId: string; color: string; size: number; quantity: number }> }>(`/recover/${encodeURIComponent(token)}`),
   stockAlert: (body: any) => send('POST', '/stock-alerts', body),
@@ -62,7 +64,10 @@ export const marketingApi = {
   announceCoupon: (id: string) => send('POST', `/coupons/${id}/announce`, {}),
   sendPromo: (body: any) => send('POST', '/promo', body),
   promoAudience: () => get<{ pushCount: number; whatsappCount: number; emailCount: number; totalReach: number; activePromotion: any }>('/promo-audience'),
-  activePromo: () => get<any>('/active-promo'),
+  activePromo: async () => {
+    const v = await fromBootstrap(d => d.activePromo, 'activePromo');
+    return v !== undefined ? v : get<any>('/active-promo');
+  },
   clearActivePromo: () => send('DELETE', '/active-promo', {}),
   getSettings: <T = any>(name: 'shipping' | 'recovery' | 'templates') => get<T>(`/settings/${name}`),
   saveSettings: (name: 'shipping' | 'recovery' | 'templates', v: any) => send('PUT', `/settings/${name}`, v),

@@ -42,7 +42,7 @@ export const AccountPage: React.FC = () => {
       <div className="min-h-screen bg-white pt-36 pb-24 flex items-center justify-center px-4">
         <div className="w-full max-w-md border border-neutral-200 bg-white p-8 sm:p-10">
           <div className="text-center mb-8 border-b border-neutral-200 pb-6">
-            <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="mx-auto h-16 w-auto object-contain" />
+            <img src="/logo.webp?v=1" alt="QADAM Men's Footwear" className="mx-auto h-16 w-auto object-contain" />
             <span className="font-tech text-[8.5px] uppercase tracking-[0.4em] text-neutral-400 mt-1 block">
               CLIENT CONCIERGE
             </span>

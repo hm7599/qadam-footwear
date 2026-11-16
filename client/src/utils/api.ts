@@ -1,4 +1,5 @@
 import { Product, Order, User, AnalyticsData, NotificationLog } from '../types';
+import { fromBootstrap } from './bootstrap';
 
 const API_BASE = '/api';
 
@@ -111,6 +112,8 @@ async function readJson(res: Response): Promise<any> {
 export const api = {
   // SITE SETTINGS (e.g. homepage hero)
   async getSetting<T = any>(key: string): Promise<T | null> {
+    const cached = await fromBootstrap(d => d.settings?.[key], `setting:${key}`);
+    if (cached !== undefined) return (cached ?? null) as T | null;
     const res = await fetch(`${API_BASE}/settings/${key}`);
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Failed to load setting');

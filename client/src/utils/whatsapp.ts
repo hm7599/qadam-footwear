@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Order } from '../types';
 import { sizeLabel } from './sizes';
+import { api } from './api';
 
 export interface WhatsAppTemplate {
   id: string;
@@ -129,9 +130,8 @@ export function whatsappLink(phone: string, text: string): string {
 let numberPromise: Promise<string> | null = null;
 const loadStoreNumber = (): Promise<string> => {
   if (!numberPromise) {
-    numberPromise = fetch('/api/settings/whatsapp')
-      .then(r => r.json())
-      .then(d => toWhatsAppNumber(normalizeWhatsApp(d?.data).businessNumber))
+    numberPromise = api.getSetting('whatsapp')
+      .then(v => toWhatsAppNumber(normalizeWhatsApp(v).businessNumber))
       .catch(() => DEFAULT_WHATSAPP.businessNumber);
   }
   return numberPromise;
