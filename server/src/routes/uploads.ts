@@ -31,14 +31,14 @@ const EXT_TO_MIME: Record<string, string> = {
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 // Only these widths are allowed for ?w= so the cache can't be flooded with random sizes
-const WIDTHS = [160, 240, 320, 480, 640, 960];
+const WIDTHS = [160, 240, 320, 480, 640, 960, 1200];
 function resizeWidth(q: unknown): number | null {
   const n = Number(Array.isArray(q) ? q[0] : q);
   if (!n) return null;
   return WIDTHS.find(x => x >= n) ?? WIDTHS[WIDTHS.length - 1];
 }
 const resizeToWebp = (buf: Buffer, w: number) =>
-  sharp(buf, { limitInputPixels: 50_000_000 }).resize({ width: w, withoutEnlargement: true }).webp({ quality: 78 }).toBuffer();
+  sharp(buf, { limitInputPixels: 50_000_000 }).resize({ width: w, withoutEnlargement: true }).webp({ quality: 86 }).toBuffer();
 
 function setImageCacheHeaders(req: Request, res: Response, fileName: string, contentType: string): boolean {
   const etag = `"${fileName}"`;

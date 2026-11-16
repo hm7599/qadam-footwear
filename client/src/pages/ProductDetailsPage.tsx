@@ -328,7 +328,11 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={`${activeImageIdx}-${selectedColor}`}
-                    src={imgUrl(product.images[activeImageIdx] || displayImage, 200)} decoding="async" loading="lazy"
+                    src={imgUrl(product.images[activeImageIdx] || displayImage, 1200)}
+                    srcSet={imgSrcSet(product.images[activeImageIdx] || displayImage, [640, 960, 1200])}
+                    sizes="(min-width: 1024px) 520px, 100vw"
+                    fetchPriority="high"
+                    decoding="async"
                     alt={product.name}
                     initial={{ opacity: 0, scale: 1.02 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -848,7 +852,8 @@ export const ProductDetailsPage: React.FC<ProductDetailsPageProps> = ({ products
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              src={imgUrl(product.images[activeImageIdx] || displayImage, 200)} decoding="async" loading="lazy"
+              src={product.images[activeImageIdx] || displayImage /* zoom: full original quality */}
+              decoding="async"
               alt={product.name}
               className="max-h-[90vh] max-w-[90vw] object-contain drop-shadow-2xl"
               onClick={e => e.stopPropagation()}

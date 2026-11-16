@@ -130,7 +130,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
             className="relative flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[80vh] sm:max-w-2xl sm:rounded-2xl"
           >
             {/* Search input */}
-            <div className="flex items-center gap-3 border-b border-neutral-200 px-4 py-3 sm:px-5">
+            <div className="flex flex-shrink-0 items-center gap-3 border-b border-neutral-200 px-4 py-3 sm:px-5">
               <Search className="h-5 w-5 flex-shrink-0 text-[#B8913A]" />
               <input
                 type="search"
@@ -160,11 +160,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
 
             {/* Category chips */}
             {chips.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto border-b border-neutral-100 px-4 py-3 sm:px-5 [scrollbar-width:none]">
+              <div className="flex flex-shrink-0 items-center gap-2 overflow-x-auto border-b border-neutral-100 px-4 py-3 sm:px-5 [scrollbar-width:none]">
                 <button
                   onClick={() => setCategory(null)}
-                  className={`flex-shrink-0 rounded-full border px-3.5 py-1.5 font-tech text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
-                    !category ? 'border-neutral-950 bg-neutral-950 text-white' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                  className={`inline-flex h-9 flex-shrink-0 items-center justify-center whitespace-nowrap rounded-lg border px-4 font-tech text-[11px] font-bold uppercase leading-none tracking-wider transition-colors ${
+                    !category ? 'border-neutral-950 bg-neutral-950 text-white shadow-sm' : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900 hover:text-neutral-950'
                   }`}
                 >
                   All
@@ -173,8 +173,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
                   <button
                     key={c.id}
                     onClick={() => setCategory(category === c.id ? null : c.id)}
-                    className={`flex-shrink-0 rounded-full border px-3.5 py-1.5 font-tech text-[10.5px] font-bold uppercase tracking-wider transition-colors ${
-                      category === c.id ? 'border-neutral-950 bg-neutral-950 text-white' : 'border-neutral-200 text-neutral-600 hover:border-neutral-400'
+                    className={`inline-flex h-9 flex-shrink-0 items-center justify-center whitespace-nowrap rounded-lg border px-4 font-tech text-[11px] font-bold uppercase leading-none tracking-wider transition-colors ${
+                      category === c.id ? 'border-neutral-950 bg-neutral-950 text-white shadow-sm' : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-900 hover:text-neutral-950'
                     }`}
                   >
                     {c.label}
@@ -251,7 +251,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, produ
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between border-t border-neutral-200 bg-[#FAF8F5] px-4 py-3 sm:px-5">
+            <div className="flex flex-shrink-0 items-center justify-between border-t border-neutral-200 bg-[#FAF8F5] px-4 py-3 sm:px-5">
               <span className="hidden items-center gap-3 font-tech text-[10px] uppercase tracking-wider text-neutral-400 sm:flex">
                 <span><kbd className="rounded border border-neutral-300 bg-white px-1">↑</kbd> <kbd className="rounded border border-neutral-300 bg-white px-1">↓</kbd> move</span>
                 <span className="flex items-center gap-1"><kbd className="rounded border border-neutral-300 bg-white px-1"><CornerDownLeft className="inline h-2.5 w-2.5" /></kbd> open</span>
