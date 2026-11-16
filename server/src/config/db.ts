@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { Product } from '../models/Product.js';
 import { User } from '../models/User.js';
 import { Order } from '../models/Order.js';
-import { SEED_PRODUCTS } from '../data/seedProducts.js';
+import { LEGACY_SEED_KEYS } from '../data/seedProducts.js';
 import { loadJsonArray, DELETED_PRODUCTS_FILE } from './store.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -46,26 +46,16 @@ async function seedInitialData() {
       });
     }
 
-    const availableSeeds = SEED_PRODUCTS.filter(
-      (sp: any) => !deletedList.includes(sp.id) && !deletedList.includes(sp.slug)
-    );
-
-    const productCount = await Product.countDocuments();
-    if (productCount === 0) {
-      if (availableSeeds.length > 0) {
-        console.log('[Database] Seeding initial luxury products into MongoDB...');
-        await Product.insertMany(availableSeeds.map(({ _id, ...p }: any) => p));
-        console.log(`✅ [Database] Seeded ${availableSeeds.length} products.`);
-      }
-    } else {
-      // Sync seed products: ensure any missing seed products are inserted without overwriting admin edits or resurrecting deleted products
-      for (const sp of availableSeeds) {
-        const exists = await Product.findOne({ $or: [{ id: sp.id }, { slug: sp.slug }] });
-        if (!exists) {
-          const { _id, ...toInsert }: any = sp;
-          await Product.create(toInsert);
-        }
-      }
+    // Permanently purge old demo/seed products — they must NEVER appear on the website.
+    // Only products added by the admin are kept.
+    const purged = await Product.deleteMany({
+      $or: [
+        { id: { $in: LEGACY_SEED_KEYS } },
+        { slug: { $in: LEGACY_SEED_KEYS } }
+      ]
+    });
+    if (purged.deletedCount) {
+      console.log(`🧹 [Database] Removed ${purged.deletedCount} old demo product(s) permanently.`);
     }
 
     // Migrate any products that still have old US sizes (< 30) or empty sizes to EU sizes [39, 40, 41, 42, 43, 44, 45]

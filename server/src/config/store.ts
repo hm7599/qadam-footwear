@@ -8,7 +8,7 @@ import { Order, IOrder } from '../models/Order.js';
 import { User, IUser } from '../models/User.js';
 import { NotificationSubscriber } from '../models/NotificationSubscriber.js';
 import { NotificationLog } from '../models/NotificationLog.js';
-import { SEED_PRODUCTS, ProductItem } from '../data/seedProducts.js';
+import { isLegacySeedProduct, ProductItem } from '../data/seedProducts.js';
 import bcrypt from 'bcryptjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -49,13 +49,16 @@ let memoryDeletedProducts: string[] = loadJsonArray<string>(DELETED_PRODUCTS_FIL
 let memoryDeletedOrders: string[] = loadJsonArray<string>(DELETED_ORDERS_FILE, ['QDM-89214']);
 
 function initProducts(): any[] {
+  // No seeding of demo products — only real products added by the admin exist.
   const existing = loadJsonArray<any>(PRODUCTS_FILE, []);
-  if (existing && existing.length > 0) {
-    return existing.filter(p => !memoryDeletedProducts.includes(p.id) && !memoryDeletedProducts.includes(p.slug) && !memoryDeletedProducts.includes(String(p._id)));
-  }
-  const initial = (SEED_PRODUCTS as any[]).filter(p => !memoryDeletedProducts.includes(p.id) && !memoryDeletedProducts.includes(p.slug));
-  persistJsonArray(PRODUCTS_FILE, initial);
-  return initial;
+  const clean = existing.filter(p =>
+    !isLegacySeedProduct(p) &&
+    !memoryDeletedProducts.includes(p.id) &&
+    !memoryDeletedProducts.includes(p.slug) &&
+    !memoryDeletedProducts.includes(String(p._id))
+  );
+  if (clean.length !== existing.length) persistJsonArray(PRODUCTS_FILE, clean);
+  return clean;
 }
 
 function initOrders(): any[] {

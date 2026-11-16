@@ -205,6 +205,8 @@ export const AdminProductsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'live' | 'draft'>('all');
   const [bulkOpen, setBulkOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [localOnly, setLocalOnly] = useState<Product[]>([]);
+  const [syncing, setSyncing] = useState(false);
   const [isShufflingShowcase, setIsShufflingShowcase] = useState(false);
   const [hasCustomOrder, setHasCustomOrder] = useState<boolean>(() => {
     try {
@@ -262,12 +264,55 @@ export const AdminProductsPage: React.FC = () => {
     setLoading(true);
     try {
       const fetched = await api.getAdminProducts();
+      // Products saved only in this browser (server save failed earlier) — they are
+      // invisible to everyone else until uploaded to the server.
+      const serverKeys = new Set<string>();
+      fetched.forEach(p => [p.id, p._id, p.slug].forEach(k => { if (k) serverKeys.add(String(k)); }));
+      const deleted = getLocalDeleted();
+      setLocalOnly(getLocalCustomProducts().filter(cp =>
+        !serverKeys.has(String(cp.id || '')) &&
+        !serverKeys.has(String(cp._id || '')) &&
+        !(cp.slug && serverKeys.has(cp.slug)) &&
+        !deleted.includes(cp.id) && !deleted.includes(cp.slug || '')
+      ));
       setProducts(mergeWithCustom(fetched));
     } catch (err) {
       console.warn('Load products error:', err);
+      setLocalOnly([]);
       setProducts(mergeWithCustom([]));
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Push browser-only products to the server so they appear for every visitor on every device
+  const handleSyncLocal = async () => {
+    if (!localOnly.length || syncing) return;
+    setSyncing(true);
+    let ok = 0;
+    const failed: string[] = [];
+    for (const p of localOnly) {
+      try {
+        const { _id, createdAt, ...payload } = p as any;
+        if (typeof payload.id === 'string' && payload.id.startsWith('local-')) delete payload.id;
+        await api.createProduct(payload);
+        ok++;
+        // Server copy is now the source of truth — drop the browser-only copy
+        try {
+          const list = getLocalCustomProducts().filter(x => !(x.id === p.id || (p.slug && x.slug === p.slug)));
+          localStorage.setItem('qadam_custom_products', JSON.stringify(list));
+        } catch {}
+      } catch {
+        failed.push(p.name || p.slug || p.id);
+      }
+    }
+    setSyncing(false);
+    window.dispatchEvent(new Event('qadam_products_updated'));
+    await loadProducts();
+    if (failed.length) {
+      alertDialog(`${ok} product(s) uploaded to the server. Could not upload: ${failed.join(', ')}. Make sure you are logged in as admin and the server is reachable, then press Upload again.`);
+    } else {
+      alertDialog(`✅ ${ok} product(s) uploaded to the server. They are now saved in the database and visible to all visitors on every device.`);
     }
   };
 
@@ -426,6 +471,7 @@ export const AdminProductsPage: React.FC = () => {
       removeLocalDeleted(finalProd.id, finalProd._id, finalProd.slug);
       setIsModalOpen(false);
       await loadProducts();
+      alertDialog('⚠️ Could not save to the server — this product is saved only in THIS browser for now, so other visitors cannot see it yet. Check your internet / admin login, then use the "Upload to Server" button to publish it.');
     } finally {
       setSaving(false);
     }
@@ -585,6 +631,27 @@ export const AdminProductsPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {localOnly.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-red-50 px-4 py-3.5 text-sm text-red-900 ring-1 ring-red-200">
+            <div className="flex items-start gap-2.5">
+              <Package className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+              <span>
+                <b>{localOnly.length} product{localOnly.length > 1 ? 's are' : ' is'} saved only in this browser</b> — they are NOT in the
+                server database, so visitors on other devices cannot see them. Press Upload to publish them for everyone.
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleSyncLocal}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-60 cursor-pointer shadow-sm"
+            >
+              {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {syncing ? 'Uploading…' : `Upload ${localOnly.length} Product${localOnly.length > 1 ? 's' : ''} to Server`}
+            </button>
+          </div>
+        )}
 
         {draftCount > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900 ring-1 ring-amber-200">
