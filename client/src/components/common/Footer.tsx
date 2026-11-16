@@ -133,7 +133,7 @@ export const Footer: React.FC = () => {
           {/* Brand + contact */}
           <div className="col-span-2 lg:col-span-4 space-y-5">
             <Link to="/" className="inline-flex">
-              <img src="/logo.png" alt="QADAM Men's Footwear" className="h-20 w-auto object-contain" />
+              <img src="/logo.png?v=2" alt="QADAM Men's Footwear" className="h-20 w-auto object-contain" />
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-neutral-500">
               Handmade leather shoes and comfortable sneakers, designed to look good and last for years.

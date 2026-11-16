@@ -10,6 +10,7 @@ import { CurrencyProvider } from './context/CurrencyContext';
 
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { BackToTop } from './components/common/BackToTop';
 import { FlipToCartAnimation } from './components/cart/FlipToCartAnimation';
 import { CartDrawer } from './components/cart/CartDrawer';
 import { PushPromptModal } from './components/common/PushPromptModal';
@@ -86,6 +87,9 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Keep the canonical URL in sync with the current page for search engines
+    const link = document.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (link) link.href = `https://www.qadamfootwear.store${pathname === '/' ? '/' : pathname}`;
   }, [pathname]);
   return null;
 };
@@ -102,6 +106,7 @@ const LayoutShell: React.FC<{ products: Product[] }> = ({ products }) => {
     <>
       <ScrollToTop />
       {!isAdminRoute && <Navbar products={products} />}
+      {!isAdminRoute && <BackToTop />}
       
       {/* Signature Flip-to-Cart Animation Floating Element */}
       <FlipToCartAnimation />

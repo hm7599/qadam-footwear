@@ -707,11 +707,12 @@ body {
 
 @layer base {
   html, body { background-color: #FBF9F6; color: #1B1714; }
+  html { scrollbar-color: #C9A46A #F3EEE6; }
   * { border-color: #E8E2DA; }
   ::selection { background: #EFE6D8; color: #1B1714; }
-  ::-webkit-scrollbar-track { background: #FBF9F6; }
-  ::-webkit-scrollbar-thumb { background: #D7CFC4; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #A99F93; }
+  ::-webkit-scrollbar-track { background: #F3EEE6; }
+  ::-webkit-scrollbar-thumb { background: #C9A46A; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #8A6A3B; }
 }
 
 /* Storefront sections: soft ivory instead of stark white, white cards stand out */

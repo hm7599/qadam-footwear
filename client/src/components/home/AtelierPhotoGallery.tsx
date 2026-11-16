@@ -184,23 +184,6 @@ export const ATELIER_PHOTOS: AtelierPhoto[] = [
     }
   },
   {
-    id: 'boot-2',
-    title: 'QADAM Noir Equestrian Chelsea',
-    category: 'boot',
-    leather: 'High-Shine Aniline Calfskin',
-    finish: 'Black Mirror Polish with Ribbed Gussets',
-    image: '/images/atelier/formal_boot_set2_3.jpg',
-    edition: 'Winter Atelier',
-    priceRs: 117600,
-    slug: 'qadam-noir-chelsea',
-    specs: {
-      hide: 'Aniline Black Calfskin',
-      construction: 'Goodyear Welted Dainite Rubber Sole',
-      last: 'Sleek Equestrian Last',
-      insole: 'Tempered Steel Shank + Cork',
-    }
-  },
-  {
     id: 'monk-single',
     title: 'QADAM Florentine Single Monkstrap',
     category: 'monk',
