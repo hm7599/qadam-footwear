@@ -40,10 +40,13 @@ export function persistJsonArray(file: string, data: any[]) {
   }).catch(e => console.warn('[DataStore] save failed:', e?.message || e));
 }
 
-export { PRODUCTS_FILE, DELETED_PRODUCTS_FILE, ORDERS_FILE, DATA_DIR };
+const DELETED_ORDERS_FILE = path.join(DATA_DIR, 'deleted-orders.json');
+export { PRODUCTS_FILE, DELETED_PRODUCTS_FILE, ORDERS_FILE, DELETED_ORDERS_FILE, DATA_DIR };
 
 // Permanently track admin-deleted products so they are NEVER resurrected on reboot or re-seed
 let memoryDeletedProducts: string[] = loadJsonArray<string>(DELETED_PRODUCTS_FILE, []);
+// Permanently track admin-deleted orders so sample/demo orders (like QDM-89214) never return
+let memoryDeletedOrders: string[] = loadJsonArray<string>(DELETED_ORDERS_FILE, ['QDM-89214']);
 
 function initProducts(): any[] {
   const existing = loadJsonArray<any>(PRODUCTS_FILE, []);
@@ -55,54 +58,16 @@ function initProducts(): any[] {
   return initial;
 }
 
+function initOrders(): any[] {
+  const existing = loadJsonArray<any>(ORDERS_FILE, []);
+  const clean = existing.filter(o => !memoryDeletedOrders.includes(o.orderNumber?.toUpperCase()));
+  persistJsonArray(ORDERS_FILE, clean);
+  return clean;
+}
+
 // Persistent fallback product state
 let memoryProducts: any[] = initProducts();
-let memoryOrders: any[] = loadJsonArray<any>(ORDERS_FILE, [
-  {
-    _id: "order-sample-1",
-    orderNumber: "QDM-89214",
-    customer: {
-      name: "Alex Sterling",
-      email: "alex@example.com",
-      phone: "+1 (555) 394-8192",
-      address: "742 Evergreen Terrace",
-      apartment: "Penthouse 4B",
-      city: "New York",
-      state: "NY",
-      postalCode: "10001",
-      country: "United States"
-    },
-    items: [
-      {
-        productId: "prod-aura-phantom-01",
-        name: "QADAM Phantom Oxford Brogue",
-        slug: "qadam-phantom-01",
-        price: 395,
-        color: "Obsidian Noir",
-        size: 10,
-        quantity: 1,
-        image: "/images/shoes/qadam-oxford-derby-black.png"
-      }
-    ],
-    subtotal: 395,
-    shippingCost: 0,
-    discount: 0,
-    totalAmount: 395,
-    shippingMethod: "Complimentary Express Courier",
-    paymentMethod: "card",
-    paymentStatus: "paid",
-    orderStatus: "shipped",
-    trackingNumber: "FX-849201938US",
-    trackingCarrier: "FedEx Luxury Priority",
-    statusHistory: [
-      { status: "pending", timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), note: "Order placed & payment verified" },
-      { status: "processing", timestamp: new Date(Date.now() - 86400000 * 1.5).toISOString(), note: "Passed luxury atelier quality inspection" },
-      { status: "shipped", timestamp: new Date(Date.now() - 86400000 * 0.5).toISOString(), note: "Dispatched via FedEx Priority" }
-    ],
-    estimatedDeliveryDate: new Date(Date.now() + 86400000 * 2).toISOString(),
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
-  }
-]);
+let memoryOrders: any[] = initOrders();
 
 // Admin password comes from ADMIN_PASSWORD in .env (never hard-coded). Without it a random one is used.
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD.length >= 10
@@ -117,25 +82,7 @@ let memoryUsers: any[] = [
     email: "admin@qadamshoes.com",
     passwordHash: bcrypt.hashSync(ADMIN_PASSWORD, 12),
     role: "admin",
-    phone: "+1 (555) 019-2831",
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: "user-customer-1",
-    name: "Alex Sterling",
-    email: "alex@example.com",
-    passwordHash: bcrypt.hashSync("customer123", 10),
-    role: "customer",
-    phone: "+1 (555) 394-8192",
-    shippingAddress: {
-      address: "742 Evergreen Terrace",
-      apartment: "Penthouse 4B",
-      city: "New York",
-      state: "NY",
-      postalCode: "10001",
-      country: "United States"
-    },
-    wishlist: ["prod-aura-phantom-01", "prod-aura-luxe-celestial"],
+    phone: "+92 300 8888000",
     createdAt: new Date().toISOString()
   }
 ];
@@ -405,7 +352,7 @@ export const DataStore = {
   async getOrders(filter: any = {}) {
     if (isMongoConnected) {
       try {
-        let query: any = {};
+        let query: any = { orderNumber: { $nin: memoryDeletedOrders } };
         if (filter.email) query['customer.email'] = filter.email;
         if (filter.orderStatus && filter.orderStatus !== 'all') query.orderStatus = filter.orderStatus;
         return await Order.find(query).sort({ createdAt: -1 });
@@ -414,6 +361,7 @@ export const DataStore = {
       }
     }
     return memoryOrders.filter(o => {
+      if (memoryDeletedOrders.includes(o.orderNumber?.toUpperCase())) return false;
       if (filter.email && o.customer?.email?.toLowerCase() !== filter.email.toLowerCase()) return false;
       if (filter.orderStatus && filter.orderStatus !== 'all' && o.orderStatus !== filter.orderStatus) return false;
       return true;
@@ -456,23 +404,29 @@ export const DataStore = {
 
   async deleteOrder(orderNumber: string): Promise<boolean> {
     const cleanNum = orderNumber.trim().toUpperCase();
+    if (!memoryDeletedOrders.includes(cleanNum)) {
+      memoryDeletedOrders.push(cleanNum);
+      persistJsonArray(DELETED_ORDERS_FILE, Array.from(new Set(memoryDeletedOrders)));
+    }
     let deleted = false;
     if (isMongoConnected) {
       try {
-        const r = await Order.findOneAndDelete({ orderNumber: cleanNum });
-        if (r) deleted = true;
+        const r = await Order.deleteMany({ orderNumber: cleanNum });
+        if (r && (r.deletedCount || 0) > 0) deleted = true;
       } catch (e) {
         console.warn('Mongo deleteOrder fallback:', e);
       }
     }
-    const idx = memoryOrders.findIndex(o => o.orderNumber?.toUpperCase() === cleanNum || o._id === orderNumber);
-    if (idx !== -1) { memoryOrders.splice(idx, 1); deleted = true; }
+    const before = memoryOrders.length;
+    memoryOrders = memoryOrders.filter(o => o.orderNumber?.toUpperCase() !== cleanNum && o._id !== orderNumber);
+    if (memoryOrders.length !== before) deleted = true;
     persistJsonArray(ORDERS_FILE, memoryOrders);
     return deleted;
   },
 
   async getOrderByNumber(orderNumber: string) {
     const cleanNum = orderNumber.trim().toUpperCase();
+    if (memoryDeletedOrders.includes(cleanNum)) return null;
     if (isMongoConnected) {
       try {
         const ord = await Order.findOne({ orderNumber: cleanNum });

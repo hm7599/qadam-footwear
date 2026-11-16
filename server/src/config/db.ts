@@ -93,73 +93,9 @@ async function seedInitialData() {
       console.log('🔑 [Database] Admin password synced from ADMIN_PASSWORD.');
     }
 
-    const customerUser = await User.findOne({ email: 'alex@example.com' });
-    if (!customerUser) {
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash('customer123', salt);
-      await User.create({
-        name: 'Alex Sterling',
-        email: 'alex@example.com',
-        passwordHash,
-        role: 'customer',
-        phone: '+1 (555) 394-8192',
-        shippingAddress: {
-          address: '742 Evergreen Terrace',
-          apartment: 'Penthouse 4B',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'United States'
-        }
-      });
-    }
-
-    const orderCount = await Order.countDocuments();
-    if (orderCount === 0) {
-      console.log('[Database] Seeding sample orders...');
-      await Order.create({
-        orderNumber: 'QDM-89214',
-        customer: {
-          name: 'Alex Sterling',
-          email: 'alex@example.com',
-          phone: '+1 (555) 394-8192',
-          address: '742 Evergreen Terrace',
-          apartment: 'Penthouse 4B',
-          city: 'New York',
-          state: 'NY',
-          postalCode: '10001',
-          country: 'United States'
-        },
-        items: [
-          {
-            productId: 'prod-aura-phantom-01',
-            name: 'QADAM Phantom Oxford Brogue',
-            slug: 'qadam-phantom-01',
-            price: 285,
-            color: 'Pure Platinum',
-            size: 10,
-            quantity: 1,
-            image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=85'
-          }
-        ],
-        subtotal: 285,
-        shippingCost: 0,
-        discount: 0,
-        totalAmount: 285,
-        shippingMethod: 'Complimentary Express Courier',
-        paymentMethod: 'card',
-        paymentStatus: 'paid',
-        orderStatus: 'shipped',
-        trackingNumber: 'FX-849201938US',
-        trackingCarrier: 'FedEx Luxury Priority',
-        statusHistory: [
-          { status: 'pending', timestamp: new Date(Date.now() - 86400000 * 2), note: 'Order placed & payment verified' },
-          { status: 'processing', timestamp: new Date(Date.now() - 86400000 * 1.5), note: 'Passed luxury atelier quality inspection' },
-          { status: 'shipped', timestamp: new Date(Date.now() - 86400000 * 0.5), note: 'Dispatched via FedEx Priority' }
-        ],
-        estimatedDeliveryDate: new Date(Date.now() + 86400000 * 2)
-      });
-    }
+    // Ensure sample/demo orders (like QDM-89214) and dummy users are permanently deleted
+    await Order.deleteMany({ orderNumber: 'QDM-89214' }).catch(() => {});
+    await User.deleteMany({ email: 'alex@example.com' }).catch(() => {});
   } catch (err: any) {
     console.error('[Database] Seeding error:', err.message);
   }
