@@ -63,7 +63,7 @@ export function downloadInvoice(order: Order, formatPrice: (usd: number) => stri
 <body>
   <div class="page">
     <div class="top">
-      <div class="brand"><img src="${location.origin}/logo.png" alt="QADAM Men's Footwear" style="height:64px;width:auto;display:block"></div>
+      <div class="brand"><img src="${location.origin}/logo.png?v=3" alt="QADAM Men's Footwear" style="height:64px;width:auto;display:block"></div>
       <div>
         <h1>Invoice</h1>
         <div class="meta">

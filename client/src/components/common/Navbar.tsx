@@ -273,7 +273,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
                   </span>
 
                   {/* Brand Logo */}
-                  <img src="/logo.png?v=2" alt="QADAM Men's Footwear" className="h-16 w-auto object-contain transition-transform group-hover:scale-[1.02]" />
+                  <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-16 w-auto object-contain transition-transform group-hover:scale-[1.02]" />
 
                   {/* Ambient Gold Spotlight Backlight */}
                   <div className="pointer-events-none absolute -bottom-3 left-1/2 -translate-x-1/2 w-48 h-5 bg-[#E5B56D]/35 blur-md rounded-full" />
@@ -347,7 +347,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
             {/* Mobile / Tablet View (< 1024px) */}
             <div className="flex lg:hidden items-center justify-between h-[64px] px-3 sm:px-4">
               <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
-                <img src="/logo.png?v=2" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
+                <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
               </Link>
 
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -414,7 +414,7 @@ export const Navbar: React.FC<NavbarProps> = ({ products }) => {
               {/* Drawer Header */}
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-neutral-200 px-4 bg-white">
                 <Link to="/" onClick={() => setIsMobileOpen(false)} className="flex items-center">
-                  <img src="/logo.png?v=2" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
+                  <img src="/logo.png?v=3" alt="QADAM Men's Footwear" className="h-12 w-auto object-contain" />
                 </Link>
                 <button
                   type="button"
