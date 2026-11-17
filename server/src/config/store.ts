@@ -206,6 +206,10 @@ export const DataStore = {
   async updateProduct(id: string, updates: any) {
     // Counter is owned by the wishlist endpoint; never overwrite it from a stale admin form
     if (updates) { updates = { ...updates }; delete updates.wishlistCount; }
+    // The admin form sends the whole product back; drop fields Mongo/Mongoose own
+    // (changing _id or timestamps in $set makes the update fail).
+    const bodyMongoId = updates?._id;
+    if (updates) for (const k of ['_id', '__v', 'createdAt', 'updatedAt', 'reviews', 'rating', 'reviewCount']) delete updates[k];
 
     const alt = /^aura-/i.test(id)
       ? id.replace(/^aura-/i, 'qadam-')
@@ -226,8 +230,8 @@ export const DataStore = {
         if (/^[0-9a-fA-F]{24}$/.test(id)) {
           or.push({ _id: id });
         }
-        if (updates?._id && /^[0-9a-fA-F]{24}$/.test(updates._id)) {
-          or.push({ _id: updates._id });
+        if (bodyMongoId && /^[0-9a-fA-F]{24}$/.test(String(bodyMongoId))) {
+          or.push({ _id: String(bodyMongoId) });
         }
 
         const updated = await Product.findOneAndUpdate(
@@ -243,8 +247,12 @@ export const DataStore = {
           persistJsonArray(PRODUCTS_FILE, memoryProducts);
           return updated;
         }
-      } catch (e) {
-        console.warn('Mongo updateProduct fallback:', e);
+        // Connected but no matching document: report "not found" instead of
+        // "saving" into memory, which is lost on the next serverless instance.
+        return null;
+      } catch (e: any) {
+        console.error('Mongo updateProduct failed:', e);
+        throw new Error('Could not save product to the database: ' + (e?.message || e));
       }
     }
     const index = memoryProducts.findIndex(p => candidates.includes(p.id) || candidates.includes(p.slug) || (p._id && String(p._id) === id));

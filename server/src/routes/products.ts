@@ -9,7 +9,7 @@ const router = Router();
 // GET all products with filtering & sorting
 // Public catalogue reads are cached briefly at the CDN edge (admin uses /admin/all, uncached).
 // Browsers always revalidate; the edge serves a copy up to 30s old and refreshes it in the background.
-const PUBLIC_CACHE = 'public, max-age=0, s-maxage=30, stale-while-revalidate=300';
+const PUBLIC_CACHE = 'public, max-age=0, s-maxage=10, stale-while-revalidate=20';
 
 router.get('/', async (req, res) => {
   try {
