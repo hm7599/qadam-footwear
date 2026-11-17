@@ -14,7 +14,7 @@ import { alertDialog, confirmDialog } from '../../components/common/Dialog';
 // Prices are stored in the base unit and shown in Rupees; admins type Rupees.
 const RATE = CURRENCIES.PKR.rate;
 const toRupees = (base: number) => Math.round((base || 0) * RATE);
-const fromRupees = (rs: number) => Math.round((rs / RATE) * 100) / 100;
+const fromRupees = (rs: number) => (rs > 0 ? rs / RATE : 0);
 
 const CATEGORIES = [
   { value: 'casuals', label: 'Casuals' },

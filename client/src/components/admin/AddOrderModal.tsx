@@ -8,7 +8,7 @@ import { DELIVERY_OPTIONS, needsTracking, STATUS_LABEL } from '../../utils/order
 
 const RATE = CURRENCIES.PKR.rate;
 const toRs = (base: number) => Math.round((base || 0) * RATE);
-const fromRs = (rs: number) => Math.round((rs / RATE) * 100) / 100;
+const fromRs = (rs: number) => (rs > 0 ? rs / RATE : 0);
 
 const inputCls =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 outline-none';
