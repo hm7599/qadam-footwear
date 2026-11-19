@@ -14,14 +14,19 @@ import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { BackToTop } from './components/common/BackToTop';
 import { FlipToCartAnimation } from './components/cart/FlipToCartAnimation';
-import { CartDrawer } from './components/cart/CartDrawer';
-import { PushPromptModal } from './components/common/PushPromptModal';
-import { ChatWidget } from './components/common/ChatWidget';
-import { InstallAppBanner } from './components/common/InstallAppBanner';
+// Not visible on first paint: loaded in a separate chunk
+const CartDrawer = lazy(() => import('./components/cart/CartDrawer').then(m => ({ default: m.CartDrawer })));
+// Not visible on first paint: loaded in a separate chunk
+const PushPromptModal = lazy(() => import('./components/common/PushPromptModal').then(m => ({ default: m.PushPromptModal })));
+// Not visible on first paint: loaded in a separate chunk
+const ChatWidget = lazy(() => import('./components/common/ChatWidget').then(m => ({ default: m.ChatWidget })));
+// Not visible on first paint: loaded in a separate chunk
+const InstallAppBanner = lazy(() => import('./components/common/InstallAppBanner').then(m => ({ default: m.InstallAppBanner })));
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { UpdatePrompt } from './components/common/UpdatePrompt';
 import { applyPwaMode } from './utils/pwa';
-import { CompareDrawer } from './components/common/CompareDrawer';
+// Not visible on first paint: loaded in a separate chunk
+const CompareDrawer = lazy(() => import('./components/common/CompareDrawer').then(m => ({ default: m.CompareDrawer })));
 import { VisitorTracker } from './components/common/VisitorTracker';
 import { applyMeta, ROUTE_META } from './utils/seo';
 
@@ -115,14 +120,16 @@ const LayoutShell: React.FC<{ products: Product[] }> = ({ products }) => {
       <FlipToCartAnimation />
       
       {/* Common Overlays */}
-      <CartDrawer />
+      <Suspense fallback={null}><CartDrawer /></Suspense>
       <Suspense fallback={null}><CheckoutPage modal /></Suspense>
       <VisitorTracker products={products} />
       <RouteMeta />
-      <PushPromptModal />
-      <CompareDrawer />
-      {!isAdminRoute && <ChatWidget products={products} />}
-      {!isAdminRoute && <InstallAppBanner />}
+      <Suspense fallback={null}>
+        <PushPromptModal />
+        <CompareDrawer />
+        {!isAdminRoute && <ChatWidget products={products} />}
+        {!isAdminRoute && <InstallAppBanner />}
+      </Suspense>
       <UpdatePrompt variant={isAdminRoute ? 'admin' : 'customer'} />
 
       <Suspense fallback={<PageLoader className="min-h-screen" />}>

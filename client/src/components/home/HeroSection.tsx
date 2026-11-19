@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { m as motion, AnimatePresence } from 'framer-motion';
 import { MoveRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -6,15 +6,44 @@ import { api } from '../../utils/api';
 import { DEFAULT_HERO, HeroContent, normalizeHero } from '../../data/heroDefaults';
 import { imgUrl, imgSrcSet } from '../../utils/img';
 
+// Last hero from the API, kept so repeat visits paint the right image instantly
+// (public/boot.js also reads HERO_PRELOAD_KEY to preload the first image before JS loads).
+const HERO_CACHE_KEY = 'qadam_hero_v1';
+const HERO_PRELOAD_KEY = 'qadam_hero_preload';
+const HERO_WIDTHS = [640, 960, 1440, 1920];
+const HERO_SIZES = '(min-width: 1024px) 50vw, 100vw';
+
+const readCachedHero = (): HeroContent | null => {
+  try {
+    const raw = localStorage.getItem(HERO_CACHE_KEY);
+    return raw ? normalizeHero(JSON.parse(raw)) : null;
+  } catch { return null; }
+};
+
+const cacheHero = (data: unknown, h: HeroContent) => {
+  try {
+    localStorage.setItem(HERO_CACHE_KEY, JSON.stringify(data));
+    const img = h.slides[0]?.image;
+    if (img) localStorage.setItem(HERO_PRELOAD_KEY, JSON.stringify({ href: imgUrl(img, 960), srcset: imgSrcSet(img, HERO_WIDTHS) || '', sizes: HERO_SIZES }));
+    else localStorage.removeItem(HERO_PRELOAD_KEY);
+  } catch { /* storage unavailable */ }
+};
+
 export const HeroSection: React.FC = () => {
-  const [hero, setHero] = useState<HeroContent>(DEFAULT_HERO);
+  const cached = useMemo(readCachedHero, []);
+  const [hero, setHero] = useState<HeroContent>(cached ?? DEFAULT_HERO);
+  // On a first visit, wait for the API before showing an image so the default one isn't downloaded and then replaced
+  const [ready, setReady] = useState(!!cached);
   const [idx, setIdx] = useState(0);
 
   // Load admin-edited content; keep defaults if the API is unavailable
   useEffect(() => {
     api.getSetting('hero')
-      .then(data => { if (data) setHero(normalizeHero(data)); })
-      .catch(() => {});
+      .then(data => {
+        if (data) { const h = normalizeHero(data); setHero(h); cacheHero(data, h); }
+      })
+      .catch(() => {})
+      .finally(() => setReady(true));
   }, []);
 
   const total = hero.slides.length;
@@ -139,11 +168,14 @@ export const HeroSection: React.FC = () => {
           {/* ── SHOE IMAGE (optional) ── */}
           <div className="lg:col-span-6 order-2 relative flex items-center justify-center min-h-[180px] sm:min-h-[240px]">
             <div className="absolute bottom-6 left-1/2 h-10 w-3/4 -translate-x-1/2 rounded-full bg-black/20 blur-2xl" />
-            <AnimatePresence mode="wait">
-              {slide.image && (
+            {/* initial={false}: the first image paints immediately (no fade-in delaying LCP) */}
+            <AnimatePresence mode="wait" initial={false}>
+              {ready && slide.image && (
                 <motion.img
                   key={slide.image + idx}
-                  src={imgUrl(slide.image, 960)} srcSet={imgSrcSet(slide.image, [640, 960, 1440, 1920])} sizes="(min-width: 1024px) 50vw, 100vw" fetchPriority="high" decoding="async"
+                  src={imgUrl(slide.image, 960)} srcSet={imgSrcSet(slide.image, HERO_WIDTHS)} sizes={HERO_SIZES}
+                  width={960} height={720}
+                  fetchPriority={idx === 0 ? 'high' : 'auto'} loading="eager" decoding={idx === 0 ? 'sync' : 'async'}
                   alt={`${slide.titleLine1} ${slide.titleLine2}`}
                   initial={{ opacity: 0, x: 40, scale: 0.97 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}

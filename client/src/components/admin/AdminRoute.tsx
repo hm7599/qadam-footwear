@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { AdminLoginPage } from '../../pages/admin/AdminLoginPage';
+const AdminLoginPage = lazy(() => import('../../pages/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 
 export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAdmin, isLoading } = useAuth();
@@ -17,7 +17,7 @@ export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }
 
   if (!isAdmin) {
     return location.pathname === '/admin/login' ? (
-      <AdminLoginPage />
+      <Suspense fallback={null}><AdminLoginPage /></Suspense>
     ) : (
       <Navigate to="/admin/login" replace state={{ from: location.pathname }} />
     );
